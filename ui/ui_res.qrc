@@ -1,0 +1,5 @@
+<RCC>
+  <qresource prefix="/images">
+    <file alias="step_1">assets/step_one_instruction.jpg</file>
+  </qresource>
+</RCC>

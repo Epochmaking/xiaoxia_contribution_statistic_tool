@@ -1,0 +1,12 @@
+[project]
+name = "xiaoxia-contribution-statistic-tool"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "mitmproxy>=11.1.3",
+    "pathlib>=1.0.1",
+    "pyside6>=6.11.1",
+    "selenium>=4.44.0",
+]
