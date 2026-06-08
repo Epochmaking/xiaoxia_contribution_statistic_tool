@@ -1,8 +1,13 @@
 """UI组件模块"""
-
 from PySide6.QtWidgets import QWidget
 from PySide6.QtCore import Qt
 from ui.ui_compiled.main_win import Ui_MainForm
+from controllers.threads import GetMpBizThread
+
+from utils.logging import get_logger
+
+
+logger = get_logger(__name__)
 
 
 class MainWindow(QWidget, Ui_MainForm):
@@ -16,10 +21,28 @@ class MainWindow(QWidget, Ui_MainForm):
         # 连接按钮点击事件
         self.close_win_btn.clicked.connect(self.close_win_btn_on_click)
         self.minimize_win_btn.clicked.connect(self.minimize_win_btn_on_click)
+        self.step_one_btn.clicked.connect(self.step_one_btn_on_click)
 
         # 用于拖动窗口
         self.m_drag = False
         self.m_drag_position = None
+
+        # 按钮点击事件标记
+        self.step_one_start = False
+        
+        # 注册线程
+        self.get_mp_biz_thread = GetMpBizThread()
+        self.get_mp_biz_thread.task_over.connect(self.get_mp_biz_task_over)
+    
+    # 步骤一任务完成
+    def get_mp_biz_task_over(self, biz_result: str):
+        """步骤一任务完成"""
+        self.step_one_btn.setText("开始获取")
+        self.step_one_start = False
+        self.get_mp_biz_thread.stop()
+        #TODO: 更新UI显示获取到的微信公众号BIZ
+        logger.info("此处UI应当更新获取到微信公众号BIZ: %s", biz_result)
+
 
     # 鼠标按下
     # pylint: disable=invalid-name
@@ -53,3 +76,16 @@ class MainWindow(QWidget, Ui_MainForm):
     def minimize_win_btn_on_click(self):
         """最小化按钮点击事件"""
         self.showMinimized()
+
+    def step_one_btn_on_click(self):
+        """步骤一按钮点击事件"""
+        if not self.step_one_start:
+            self.step_one_start = True
+            self.step_one_btn.setText("停止获取")
+            logger.info("开始获取微信公众号BIZ")
+            self.get_mp_biz_thread.start()
+        else:
+            self.step_one_start = False
+            self.step_one_btn.setText("开始获取")
+            logger.info("停止获取微信公众号BIZ")
+            self.get_mp_biz_thread.stop()

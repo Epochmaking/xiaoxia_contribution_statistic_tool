@@ -240,14 +240,14 @@ class Ui_MainForm(object):
 
         self.horizontalLayout.addItem(self.horizontalSpacer_3)
 
-        self.pushButton_3 = QPushButton(self.btn_container)
-        self.pushButton_3.setObjectName(u"pushButton_3")
-        sizePolicy.setHeightForWidth(self.pushButton_3.sizePolicy().hasHeightForWidth())
-        self.pushButton_3.setSizePolicy(sizePolicy)
-        self.pushButton_3.setMinimumSize(QSize(200, 50))
-        self.pushButton_3.setCursor(QCursor(Qt.CursorShape.PointingHandCursor))
+        self.step_one_btn = QPushButton(self.btn_container)
+        self.step_one_btn.setObjectName(u"step_one_btn")
+        sizePolicy.setHeightForWidth(self.step_one_btn.sizePolicy().hasHeightForWidth())
+        self.step_one_btn.setSizePolicy(sizePolicy)
+        self.step_one_btn.setMinimumSize(QSize(200, 50))
+        self.step_one_btn.setCursor(QCursor(Qt.CursorShape.PointingHandCursor))
 
-        self.horizontalLayout.addWidget(self.pushButton_3)
+        self.horizontalLayout.addWidget(self.step_one_btn)
 
         self.horizontalSpacer_4 = QSpacerItem(40, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
 
@@ -301,6 +301,6 @@ class Ui_MainForm(object):
 "<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-size:16pt; color:#ffffff;\">4. \u5355\u51fb\u672c\u9875\u9762\u201c\u505c\u6b62\u83b7\u53d6\u201d\u6309\u94ae</span></p>\n"
 "<p align=\"center\" style=\" margin-top:15px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><img src=\":/images/ste"
                         "p_1\" width=\"600\" /></p></body></html>", None))
-        self.pushButton_3.setText(QCoreApplication.translate("MainForm", u"\u5f00\u59cb\u83b7\u53d6", None))
+        self.step_one_btn.setText(QCoreApplication.translate("MainForm", u"\u5f00\u59cb\u83b7\u53d6", None))
     # retranslateUi
 

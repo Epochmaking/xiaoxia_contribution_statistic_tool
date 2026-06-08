@@ -6,7 +6,7 @@ import logging
 
 # 1. 配置日志器
 logger = logging.getLogger()
-logger.setLevel(logging.DEBUG)
+logger.setLevel(logging.INFO)
 logger.handlers.clear()
 
 # 2. 日志格式
