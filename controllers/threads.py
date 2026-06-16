@@ -2,7 +2,7 @@ from threading import Thread
 from PySide6.QtCore import Signal
 from PySide6.QtCore import QThread
 
-from controllers.crawler import Crawler, MpBizResponseHandler
+from controllers.crawler import MpBizCrawler
 
 from utils import logging
 
@@ -15,14 +15,11 @@ class GetMpBizThread(QThread):
     def __init__(self):
         super().__init__()
         self.to_stop = False # 停止thread标志
-        self.response_handler = MpBizResponseHandler()
-        self.crawler = Crawler(self.response_handler)
+        self.crawler = MpBizCrawler()
 
     def run(self):
         """线程运行方法"""
         self.to_stop = False
-        self.response_handler.biz_result = None
-        logger.info("开始获取微信公众号BIZ")
         Thread(target=self.crawler.start, daemon=True).start()
         while True:
             if self.to_stop:
