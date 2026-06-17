@@ -2,7 +2,7 @@
 from PySide6.QtWidgets import QWidget, QMessageBox
 from PySide6.QtCore import Qt
 from ui.ui_compiled.main_win import Ui_MainForm
-from controllers.threads import GetMpBizThread
+from controllers.threads import GetMpBizThread, GetArticleListThread
 
 import constants as consts
 from utils.logging import get_logger
@@ -26,17 +26,21 @@ class MainWindow(QWidget, Ui_MainForm):
         self.close_win_btn.clicked.connect(self.close_win_btn_on_click)
         self.minimize_win_btn.clicked.connect(self.minimize_win_btn_on_click)
         self.step_one_btn_connection = self.step_one_btn.clicked.connect(self.step_one_btn_on_click)
+        self.step_two_btn_connection = self.step_two_btn.clicked.connect(self.step_two_btn_on_click)
 
         # 用于拖动窗口
         self.m_drag = False
         self.m_drag_position = None
 
         # 按钮点击事件标记
-        self.step_one_start = False
+        self.step_start = False
 
         # 注册线程
         self.get_mp_biz_thread = GetMpBizThread()
         self.get_mp_biz_thread.task_over.connect(self.get_mp_biz_task_over)
+
+        self.get_article_list_thread = GetArticleListThread()
+        self.get_article_list_thread.task_over.connect(self.get_article_list_task_over)
 
     # 步骤一任务完成
     def get_mp_biz_task_over(self, biz_result: str):
@@ -58,9 +62,18 @@ class MainWindow(QWidget, Ui_MainForm):
 
         # 绑定按钮为下一步按钮
         self.step_one_btn.setText("下一步")
-        self.step_one_start = False
+        self.step_start = False
         self.step_one_btn.disconnect(self.step_one_btn_connection)
         self.step_one_btn.clicked.connect(self.go_to_next_step)
+
+    # 步骤二任务完成
+    def get_article_list_task_over(self, article_list_url: str):
+        """步骤二任务完成"""
+        # 绑定按钮为下一步按钮
+        self.step_two_btn.setText("下一步")
+        self.step_start = False
+        self.step_two_btn.disconnect(self.step_two_btn_connection)
+        self.step_two_btn.clicked.connect(self.go_to_next_step)
 
 
 
@@ -113,16 +126,28 @@ class MainWindow(QWidget, Ui_MainForm):
             self.article_list_url.setText(consts.ARTICLE_LIST_URL)
             self.article_list_url.setSelection(0, len(self.article_list_url.text()))
 
-
     def step_one_btn_on_click(self):
         """步骤一按钮点击事件"""
-        if not self.step_one_start:
-            self.step_one_start = True
+        if not self.step_start:
+            self.step_start = True
             self.step_one_btn.setText("停止获取")
             logger.info("开始获取微信公众号BIZ")
             self.get_mp_biz_thread.start()
         else:
-            self.step_one_start = False
+            self.step_start = False
             self.step_one_btn.setText("开始获取")
             logger.info("停止获取微信公众号BIZ")
             self.get_mp_biz_thread.stop()
+
+    def step_two_btn_on_click(self):
+        """步骤二按钮点击事件"""
+        if not self.step_start:
+            self.step_start = True
+            self.step_two_btn.setText("停止获取")
+            logger.info("开始获取文章列表")
+            self.get_article_list_thread.start()
+        else:
+            self.step_start = False
+            self.step_two_btn.setText("开始获取")
+            logger.info("停止获取文章列表")
+            self.get_article_list_thread.stop()

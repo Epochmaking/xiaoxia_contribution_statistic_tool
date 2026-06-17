@@ -3,7 +3,7 @@ max-line-length=130
 
 [MESSAGES CONTROL]
 # Skip missing docstring for functions/methods
-disable=missing-module-docstring, no-name-in-module
+disable=missing-module-docstring, no-name-in-module, logging-fstring-interpolation
 
 [MASTER]
 # 指定虚拟环境的 Python 路径

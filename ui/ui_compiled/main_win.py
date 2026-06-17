@@ -451,6 +451,17 @@ class Ui_MainForm(object):
         self.stackedWidget.addWidget(self.page_2)
         self.page_3 = QWidget()
         self.page_3.setObjectName(u"page_3")
+        self.verticalLayout_5 = QVBoxLayout(self.page_3)
+        self.verticalLayout_5.setObjectName(u"verticalLayout_5")
+        self.label_3 = QLabel(self.page_3)
+        self.label_3.setObjectName(u"label_3")
+        font4 = QFont()
+        font4.setPointSize(36)
+        self.label_3.setFont(font4)
+        self.label_3.setStyleSheet(u"color: rgb(255,255,255);")
+
+        self.verticalLayout_5.addWidget(self.label_3)
+
         self.stackedWidget.addWidget(self.page_3)
 
         self.verticalLayout_2.addWidget(self.stackedWidget)
@@ -464,7 +475,7 @@ class Ui_MainForm(object):
 
         self.retranslateUi(MainForm)
 
-        self.stackedWidget.setCurrentIndex(1)
+        self.stackedWidget.setCurrentIndex(2)
 
 
         QMetaObject.connectSlotsByName(MainForm)
@@ -502,8 +513,9 @@ class Ui_MainForm(object):
 "<p align=\"center\" style=\"-qt-paragraph-type:empty; margin-top:15px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; color:#ffffff;\"><br /></p></body></html>", None))
         self.label.setText(QCoreApplication.translate("MainForm", u"1. \u8bf7\u9009\u62e9\u8981\u7edf\u8ba1\u7684\u6708\u4efd\uff1a", None))
         self.date_edit.setDisplayFormat(QCoreApplication.translate("MainForm", u"yyyy/M", None))
-        self.label_2.setText(QCoreApplication.translate("MainForm", u"2. \u8bf7\u7528\u9f20\u6807\u9009\u4e2d\u4ee5\u4e0b\u94fe\u63a5\u590d\u5236\u5e76\u7c98\u8d34\u5230\u5fae\u4fe1\u804a\u5929\u6253\u5f00\uff1a", None))
+        self.label_2.setText(QCoreApplication.translate("MainForm", u"2. \u8bf7\u7528\u9f20\u6807\u53f3\u952e\u4ee5\u4e0b\u94fe\u63a5\u590d\u5236\u5e76\u7c98\u8d34\u5230\u5fae\u4fe1\u804a\u5929\u6253\u5f00\uff1a", None))
         self.article_list_url.setText(QCoreApplication.translate("MainForm", u"[URL_HOLDER]", None))
         self.step_two_btn.setText(QCoreApplication.translate("MainForm", u"\u5f00\u59cb\u83b7\u53d6", None))
+        self.label_3.setText(QCoreApplication.translate("MainForm", u"\u5f85\u5f00\u53d1", None))
     # retranslateUi
 
