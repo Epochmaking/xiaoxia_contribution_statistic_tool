@@ -112,7 +112,7 @@ class Crawler:
 
         try:
             self.master.shutdown() # 告知 DumpMaster 关闭（线程安全）
-            self._loop.call_soon_threadsafe(self._loop.stop) # 安排由事件循环所在线程去停止 _loop，避免跨线程 await
+            # self._loop.call_soon_threadsafe(self._loop.stop) # 安排由事件循环所在线程去停止 _loop，避免跨线程 await
         except Exception as e: # pylint: disable=broad-exception-caught
             logger.exception("master _loop stop error: %s", e)
         finally:
@@ -152,7 +152,7 @@ class ArticleListCrawler(Crawler):
     def has_template(self) -> bool:
         """是否已经捕获到模板 flow"""
         return self.response_handler.template_flow is not None
- 
+
     async def _replay_and_wait(self, new_flow: http.HTTPFlow, timeout_s: float = 10.0) -> http.HTTPFlow | None:
         assert self.master is not None
         # 执行客户端重放（主动发请求到服务器）
@@ -212,7 +212,6 @@ class ArticleListCrawler(Crawler):
             general_msg_list = json.loads(data.get("general_msg_list", "{}"))
             article_list = general_msg_list.get("list", [])
 
-            logger.info(f"获取第 {offset+1} 页成功，共 {len(article_list)} 条")
             return article_list
 
         except Exception as e: # pylint: disable=broad-exception-caught

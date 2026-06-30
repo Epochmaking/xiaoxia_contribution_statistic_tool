@@ -1,9 +1,9 @@
-"""UI组件模块"""
+from datetime import datetime
 from PySide6.QtWidgets import QWidget, QMessageBox
-from PySide6.QtCore import Qt
+from PySide6.QtCore import Qt, QDate
+
 from ui.ui_compiled.main_win import Ui_MainForm
 from controllers.threads import GetMpBizThread, GetArticleListThread
-
 import constants as consts
 from utils.logging import get_logger
 
@@ -20,7 +20,8 @@ class MainWindow(QWidget, Ui_MainForm):
         self.setWindowFlags(Qt.WindowType.FramelessWindowHint)  # 1. 设置窗口标志：无边框
         self.setAttribute(Qt.WidgetAttribute.WA_TranslucentBackground) # 2. 设置背景透明（必须和无边框一起用）
         self.setupUi(self)
-        self.stackedWidget.setCurrentIndex(0)
+        self.stackedWidget.setCurrentIndex(0) # 3. 初始化显示步骤一
+        self.date_edit.setDate(QDate.currentDate())
 
         # 连接按钮点击事件
         self.close_win_btn.clicked.connect(self.close_win_btn_on_click)
@@ -79,7 +80,7 @@ class MainWindow(QWidget, Ui_MainForm):
 
     # 鼠标按下
     # pylint: disable=invalid-name
-    def mousePressEvent(self, event): 
+    def mousePressEvent(self, event):
         """鼠标按下事件，用于拖动窗口"""
         if self.title_bar.underMouse() and event.button() == Qt.MouseButton.LeftButton:
             self.m_drag = True
@@ -145,6 +146,10 @@ class MainWindow(QWidget, Ui_MainForm):
             self.step_start = True
             self.step_two_btn.setText("停止获取")
             logger.info("开始获取文章列表")
+            time_epoch = self.date_edit.dateTime().toSecsSinceEpoch()
+            self.get_article_list_thread.target_time = (
+                datetime.fromtimestamp(time_epoch)
+            )
             self.get_article_list_thread.start()
         else:
             self.step_start = False
