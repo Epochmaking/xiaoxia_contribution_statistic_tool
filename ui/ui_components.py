@@ -4,13 +4,12 @@ from PySide6.QtCore import Qt, QDate
 
 from ui.ui_compiled.main_win import Ui_MainForm
 from controllers.threads import GetMpBizThread, GetArticleListThread
+from helpers.config_helper import write_config, del_config
 import constants as consts
 from utils.logging import get_logger
 
 
 logger = get_logger(__name__)
-
-MP_BIZ: str | None = None
 
 
 class MainWindow(QWidget, Ui_MainForm):
@@ -28,6 +27,21 @@ class MainWindow(QWidget, Ui_MainForm):
         self.minimize_win_btn.clicked.connect(self.minimize_win_btn_on_click)
         self.step_one_btn_connection = self.step_one_btn.clicked.connect(self.step_one_btn_on_click)
         self.step_two_btn_connection = self.step_two_btn.clicked.connect(self.step_two_btn_on_click)
+        self.reget_biz_btn_connection = self.reget_biz_btn.clicked.connect(self.reget_biz_btn_on_click)
+
+        # 初始化显示已获取的BIZ
+        if consts.MP_BIZ:
+            self.biz_display_label.setText(consts.MP_BIZ)
+            self.reget_biz_btn.setVisible(True)
+            consts.ARTICLE_LIST_URL = ("https://mp.weixin.qq.com/mp/"
+            f"profile_ext?action=home&__biz={consts.MP_BIZ}#wechat_redirect")
+            # 绑定按钮为下一步按钮
+            self.step_one_btn.setText("下一步")
+            self.step_start = False
+            self.step_one_btn.disconnect(self.step_one_btn_connection)
+            self.step_one_btn.clicked.connect(self.go_to_next_step)
+        else:
+            self.reget_biz_btn.setVisible(False)
 
         # 用于拖动窗口
         self.m_drag = False
@@ -60,6 +74,13 @@ class MainWindow(QWidget, Ui_MainForm):
         msg_box.setText(f"获取到的微信公众号BIZ: {biz_result}")
         msg_box.setWindowFlags(msg_box.windowFlags() | Qt.WindowType.WindowStaysOnTopHint)
         msg_box.exec()
+
+        # 写入至配置文件并更新到“已获取biz”当中
+        write_config({"mp_id": biz_result})
+        self.biz_display_label.setText(biz_result)
+
+        # 显示重新获取按钮
+        self.reget_biz_btn.setVisible(True)
 
         # 绑定按钮为下一步按钮
         self.step_one_btn.setText("下一步")
@@ -111,6 +132,17 @@ class MainWindow(QWidget, Ui_MainForm):
     def minimize_win_btn_on_click(self):
         """最小化按钮点击事件"""
         self.showMinimized()
+
+    def reget_biz_btn_on_click(self):
+        """重新获取按钮点击事件"""
+        consts.MP_BIZ = None
+        del_config("mp_id")
+        self.biz_display_label.setText("无")
+        self.reget_biz_btn.setVisible(False)
+        self.step_one_btn.setText("开始获取")
+        self.step_start = False
+        self.step_one_btn.disconnect(self.step_one_btn_connection)
+        self.step_one_btn.clicked.connect(self.step_one_btn_on_click)
 
     def go_to_next_step(self):
         """下一步"""

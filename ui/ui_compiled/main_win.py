@@ -215,16 +215,82 @@ class Ui_MainForm(object):
         self.textBrowser.setObjectName(u"textBrowser")
         self.textBrowser.setMouseTracking(False)
         self.textBrowser.setAcceptDrops(False)
+        self.textBrowser.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
+        self.textBrowser.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
         self.textBrowser.setTextInteractionFlags(Qt.TextInteractionFlag.LinksAccessibleByKeyboard|Qt.TextInteractionFlag.LinksAccessibleByMouse)
 
         self.verticalLayout_7.addWidget(self.textBrowser)
+
+        self.widget_3 = QWidget(self.content)
+        self.widget_3.setObjectName(u"widget_3")
+        self.horizontalLayout_6 = QHBoxLayout(self.widget_3)
+        self.horizontalLayout_6.setSpacing(5)
+        self.horizontalLayout_6.setObjectName(u"horizontalLayout_6")
+        self.horizontalLayout_6.setContentsMargins(-1, 3, -1, 3)
+        self.label_4 = QLabel(self.widget_3)
+        self.label_4.setObjectName(u"label_4")
+        sizePolicy3 = QSizePolicy(QSizePolicy.Policy.Maximum, QSizePolicy.Policy.Preferred)
+        sizePolicy3.setHorizontalStretch(0)
+        sizePolicy3.setVerticalStretch(0)
+        sizePolicy3.setHeightForWidth(self.label_4.sizePolicy().hasHeightForWidth())
+        self.label_4.setSizePolicy(sizePolicy3)
+        font1 = QFont()
+        font1.setPointSize(14)
+        self.label_4.setFont(font1)
+        self.label_4.setStyleSheet(u"color: rgb(255, 255, 255);")
+
+        self.horizontalLayout_6.addWidget(self.label_4, 0, Qt.AlignmentFlag.AlignVCenter)
+
+        self.biz_display_label = QLabel(self.widget_3)
+        self.biz_display_label.setObjectName(u"biz_display_label")
+        sizePolicy3.setHeightForWidth(self.biz_display_label.sizePolicy().hasHeightForWidth())
+        self.biz_display_label.setSizePolicy(sizePolicy3)
+        self.biz_display_label.setFont(font1)
+        self.biz_display_label.setStyleSheet(u"color:rgb(121, 139, 163);\n"
+"")
+
+        self.horizontalLayout_6.addWidget(self.biz_display_label, 0, Qt.AlignmentFlag.AlignVCenter)
+
+        self.reget_biz_btn = QPushButton(self.widget_3)
+        self.reget_biz_btn.setObjectName(u"reget_biz_btn")
+        sizePolicy4 = QSizePolicy(QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Minimum)
+        sizePolicy4.setHorizontalStretch(0)
+        sizePolicy4.setVerticalStretch(0)
+        sizePolicy4.setHeightForWidth(self.reget_biz_btn.sizePolicy().hasHeightForWidth())
+        self.reget_biz_btn.setSizePolicy(sizePolicy4)
+        self.reget_biz_btn.setMinimumSize(QSize(110, 30))
+        font2 = QFont()
+        font2.setPointSize(11)
+        font2.setBold(True)
+        self.reget_biz_btn.setFont(font2)
+        self.reget_biz_btn.setCursor(QCursor(Qt.CursorShape.PointingHandCursor))
+        self.reget_biz_btn.setStyleSheet(u"QPushButton {\n"
+"	color: rgb(255, 255, 255);\n"
+"	background: rgb(67, 67, 67);\n"
+"	border-radius: 5px;\n"
+"	font-weight: bold;\n"
+"}\n"
+"\n"
+"QPushButton:hover {\n"
+"	background: rgb(76, 76, 76);\n"
+"}")
+
+        self.horizontalLayout_6.addWidget(self.reget_biz_btn, 0, Qt.AlignmentFlag.AlignLeft)
+
+
+        self.verticalLayout_7.addWidget(self.widget_3)
 
 
         self.verticalLayout_6.addWidget(self.content)
 
         self.btn_container = QWidget(self.page_1)
         self.btn_container.setObjectName(u"btn_container")
-        self.btn_container.setMinimumSize(QSize(0, 100))
+        sizePolicy5 = QSizePolicy(QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Minimum)
+        sizePolicy5.setHorizontalStretch(0)
+        sizePolicy5.setVerticalStretch(0)
+        sizePolicy5.setHeightForWidth(self.btn_container.sizePolicy().hasHeightForWidth())
+        self.btn_container.setSizePolicy(sizePolicy5)
+        self.btn_container.setMinimumSize(QSize(0, 80))
         self.btn_container.setStyleSheet(u"QPushButton {\n"
 "	background: rgb(6, 173, 86);\n"
 "	color: rgb(255, 255, 255);\n"
@@ -237,6 +303,7 @@ class Ui_MainForm(object):
 "}")
         self.horizontalLayout = QHBoxLayout(self.btn_container)
         self.horizontalLayout.setObjectName(u"horizontalLayout")
+        self.horizontalLayout.setContentsMargins(-1, 0, -1, 5)
         self.horizontalSpacer_3 = QSpacerItem(40, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
 
         self.horizontalLayout.addItem(self.horizontalSpacer_3)
@@ -265,22 +332,22 @@ class Ui_MainForm(object):
         self.verticalLayout_3.setObjectName(u"verticalLayout_3")
         self.content_2 = QWidget(self.page_2)
         self.content_2.setObjectName(u"content_2")
-        sizePolicy3 = QSizePolicy(QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Maximum)
-        sizePolicy3.setHorizontalStretch(0)
-        sizePolicy3.setVerticalStretch(0)
-        sizePolicy3.setHeightForWidth(self.content_2.sizePolicy().hasHeightForWidth())
-        self.content_2.setSizePolicy(sizePolicy3)
+        sizePolicy6 = QSizePolicy(QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Maximum)
+        sizePolicy6.setHorizontalStretch(0)
+        sizePolicy6.setVerticalStretch(0)
+        sizePolicy6.setHeightForWidth(self.content_2.sizePolicy().hasHeightForWidth())
+        self.content_2.setSizePolicy(sizePolicy6)
         self.verticalLayout_8 = QVBoxLayout(self.content_2)
         self.verticalLayout_8.setSpacing(2)
         self.verticalLayout_8.setObjectName(u"verticalLayout_8")
         self.verticalLayout_8.setContentsMargins(50, 9, 50, 0)
         self.textBrowser_2 = QTextBrowser(self.content_2)
         self.textBrowser_2.setObjectName(u"textBrowser_2")
-        sizePolicy4 = QSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
-        sizePolicy4.setHorizontalStretch(0)
-        sizePolicy4.setVerticalStretch(0)
-        sizePolicy4.setHeightForWidth(self.textBrowser_2.sizePolicy().hasHeightForWidth())
-        self.textBrowser_2.setSizePolicy(sizePolicy4)
+        sizePolicy7 = QSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
+        sizePolicy7.setHorizontalStretch(0)
+        sizePolicy7.setVerticalStretch(0)
+        sizePolicy7.setHeightForWidth(self.textBrowser_2.sizePolicy().hasHeightForWidth())
+        self.textBrowser_2.setSizePolicy(sizePolicy7)
         self.textBrowser_2.setMaximumSize(QSize(16777215, 90))
         self.textBrowser_2.setMouseTracking(False)
         self.textBrowser_2.setAcceptDrops(False)
@@ -299,17 +366,17 @@ class Ui_MainForm(object):
         self.horizontalLayout_5.setContentsMargins(50, -1, 50, -1)
         self.label = QLabel(self.widget)
         self.label.setObjectName(u"label")
-        font1 = QFont()
-        font1.setPointSize(16)
-        self.label.setFont(font1)
+        font3 = QFont()
+        font3.setPointSize(16)
+        self.label.setFont(font3)
         self.label.setStyleSheet(u"color: rgb(255, 255, 255);")
 
         self.horizontalLayout_5.addWidget(self.label)
 
         self.date_edit = QDateEdit(self.widget)
         self.date_edit.setObjectName(u"date_edit")
-        font2 = QFont()
-        self.date_edit.setFont(font2)
+        font4 = QFont()
+        self.date_edit.setFont(font4)
         self.date_edit.setStyleSheet(u"QDateEdit {\n"
 "	font-size: 16px;\n"
 "}\n"
@@ -366,7 +433,7 @@ class Ui_MainForm(object):
         self.verticalLayout_4.setContentsMargins(50, -1, 50, -1)
         self.label_2 = QLabel(self.widget_2)
         self.label_2.setObjectName(u"label_2")
-        self.label_2.setFont(font1)
+        self.label_2.setFont(font3)
         self.label_2.setStyleSheet(u"color: rgb(255, 255, 255);")
 
         self.verticalLayout_4.addWidget(self.label_2)
@@ -399,9 +466,9 @@ class Ui_MainForm(object):
         palette2.setBrush(QPalette.ColorGroup.Disabled, QPalette.ColorRole.PlaceholderText, brush11)
 #endif
         self.article_list_url.setPalette(palette2)
-        font3 = QFont()
-        font3.setPointSize(12)
-        self.article_list_url.setFont(font3)
+        font5 = QFont()
+        font5.setPointSize(12)
+        self.article_list_url.setFont(font5)
         self.article_list_url.setStyleSheet(u"color: rgb(6, 173, 86);")
         self.article_list_url.setWordWrap(True)
         self.article_list_url.setMargin(2)
@@ -455,9 +522,9 @@ class Ui_MainForm(object):
         self.verticalLayout_5.setObjectName(u"verticalLayout_5")
         self.label_3 = QLabel(self.page_3)
         self.label_3.setObjectName(u"label_3")
-        font4 = QFont()
-        font4.setPointSize(36)
-        self.label_3.setFont(font4)
+        font6 = QFont()
+        font6.setPointSize(36)
+        self.label_3.setFont(font6)
         self.label_3.setStyleSheet(u"color: rgb(255,255,255);")
 
         self.verticalLayout_5.addWidget(self.label_3)
@@ -475,7 +542,7 @@ class Ui_MainForm(object):
 
         self.retranslateUi(MainForm)
 
-        self.stackedWidget.setCurrentIndex(2)
+        self.stackedWidget.setCurrentIndex(0)
 
 
         QMetaObject.connectSlotsByName(MainForm)
@@ -500,7 +567,10 @@ class Ui_MainForm(object):
 "<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-size:16pt; color:#ffffff;\">3. \u4ece\u516c\u4f17\u53f7\u5217\u8868\u5355\u51fb\u6253\u5f00\u4efb\u610f\u4e00\u7bc7\u56fe\u6587\uff08\u4e0d\u80fd\u662f\u8d34\u56fe\uff09</span></p>\n"
 "<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-size:16pt; color:#ffffff;\">4. \u5355\u51fb\u672c\u9875\u9762\u201c\u505c\u6b62\u83b7\u53d6\u201d\u6309\u94ae</span></p>\n"
 "<p align=\"center\" style=\" margin-top:15px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><img src=\":/images/ste"
-                        "p_1\" width=\"600\" /></p></body></html>", None))
+                        "p_1\" width=\"550\" /></p></body></html>", None))
+        self.label_4.setText(QCoreApplication.translate("MainForm", u"\u5df2\u83b7\u53d6\u7684\u516c\u4f17\u53f7ID\uff1a", None))
+        self.biz_display_label.setText(QCoreApplication.translate("MainForm", u"\u65e0", None))
+        self.reget_biz_btn.setText(QCoreApplication.translate("MainForm", u"\u21bb \u91cd\u65b0\u83b7\u53d6", None))
         self.step_one_btn.setText(QCoreApplication.translate("MainForm", u"\u5f00\u59cb\u83b7\u53d6", None))
         self.textBrowser_2.setHtml(QCoreApplication.translate("MainForm", u"<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0//EN\" \"http://www.w3.org/TR/REC-html40/strict.dtd\">\n"
 "<html><head><meta name=\"qrichtext\" content=\"1\" /><meta charset=\"utf-8\" /><style type=\"text/css\">\n"
