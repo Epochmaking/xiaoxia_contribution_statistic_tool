@@ -39,7 +39,7 @@ class MainWindow(QWidget, Ui_MainForm):
             self.step_one_btn.setText("下一步")
             self.step_start = False
             self.step_one_btn.disconnect(self.step_one_btn_connection)
-            self.step_one_btn.clicked.connect(self.go_to_next_step)
+            self.step_one_btn_connection = self.step_one_btn.clicked.connect(self.go_to_next_step)
         else:
             self.reget_biz_btn.setVisible(False)
 
@@ -86,7 +86,7 @@ class MainWindow(QWidget, Ui_MainForm):
         self.step_one_btn.setText("下一步")
         self.step_start = False
         self.step_one_btn.disconnect(self.step_one_btn_connection)
-        self.step_one_btn.clicked.connect(self.go_to_next_step)
+        self.step_one_btn_connection = self.step_one_btn.clicked.connect(self.go_to_next_step)
 
     # 步骤二任务完成
     def get_article_list_task_over(self, article_list_url: str):

@@ -6,7 +6,8 @@ from mitmproxy.options import Options
 from mitmproxy.tools.dump import DumpMaster
 from mitmproxy import http
 
-from constants import LISTEN_PORT, MAX_TIMEOUT_S
+from controllers.proxy import unset_network_proxy, set_network_proxy
+from constants import LISTEN_PORT, MAX_TIMEOUT_S, LISTEN_HOST
 
 from utils.logging import get_logger
 logger = get_logger(__name__)
@@ -98,6 +99,7 @@ class Crawler:
 
     def start(self):
         """启动爬虫"""
+        set_network_proxy(LISTEN_HOST, LISTEN_PORT) # 设置代理
         self._ready_event = Event()  # 用于等待master初始化完成
         self._thread = Thread(target=self._run_loop, daemon=True)
         self._thread.start()
@@ -116,6 +118,7 @@ class Crawler:
         except Exception as e: # pylint: disable=broad-exception-caught
             logger.exception("master _loop stop error: %s", e)
         finally:
+            unset_network_proxy() # 取消代理
             self.master = None
 
         self._thread.join(timeout=5)
