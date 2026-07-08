@@ -10,12 +10,12 @@ logger = get_logger(__name__)
 def main(argv: list[str]):
     """主函数"""
     app = QApplication(argv)
-    try:
-        main_window = MainWindow()
-        main_window.show()
-        sys.exit(app.exec())
-    finally:
-        unset_network_proxy()
+    main_window = MainWindow()
+    main_window.show()
+    sys.exit(app.exec())
 
 if __name__ == "__main__":
-    main(sys.argv)
+    try:
+        main(sys.argv)
+    finally:
+        unset_network_proxy()

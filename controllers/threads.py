@@ -49,7 +49,7 @@ class GetMpBizThread(QThread):
 
 class GetArticleListThread(QThread):
     """获取文章列表接口"""
-    task_over = Signal(str)
+    task_over = Signal(list)
     flow_got = Signal(bool)
 
     def __init__(self):
@@ -114,7 +114,7 @@ class GetArticleListThread(QThread):
 
                 page_num += 1
 
-            self.task_over.emit(f"拉取完成，共获取 {len(all_articles)} 篇文章")
+            self.task_over.emit(all_articles)
         finally:
             self.crawler.stop()
 

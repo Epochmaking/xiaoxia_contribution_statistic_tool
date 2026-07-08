@@ -637,7 +637,7 @@ QPushButton:hover {
             <string notr="true"/>
            </property>
            <property name="currentIndex">
-            <number>0</number>
+            <number>2</number>
            </property>
            <widget class="QWidget" name="page_1">
             <property name="autoFillBackground">
@@ -1322,18 +1322,16 @@ QPushButton:hover {
             <layout class="QVBoxLayout" name="verticalLayout_5">
              <item>
               <widget class="QLabel" name="label_3">
-               <property name="font">
-                <font>
-                 <pointsize>36</pointsize>
-                </font>
-               </property>
-               <property name="styleSheet">
-                <string notr="true">color: rgb(255,255,255);</string>
-               </property>
                <property name="text">
-                <string>待开发</string>
+                <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p align=&quot;center&quot;&gt;&lt;span style=&quot; font-size:26pt; font-weight:700; color:#ffffff;&quot;&gt;第三步 确认文章列表&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+               </property>
+               <property name="textFormat">
+                <enum>Qt::TextFormat::MarkdownText</enum>
                </property>
               </widget>
+             </item>
+             <item>
+              <widget class="QTableView" name="article_confirm_table"/>
              </item>
             </layout>
            </widget>

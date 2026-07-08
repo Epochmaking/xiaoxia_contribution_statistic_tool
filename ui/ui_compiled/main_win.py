@@ -16,9 +16,10 @@ from PySide6.QtGui import (QBrush, QColor, QConicalGradient, QCursor,
     QImage, QKeySequence, QLinearGradient, QPainter,
     QPalette, QPixmap, QRadialGradient, QTransform)
 from PySide6.QtWidgets import (QAbstractSpinBox, QApplication, QDateEdit, QDateTimeEdit,
-    QFrame, QHBoxLayout, QLabel, QLayout,
-    QPushButton, QSizePolicy, QSpacerItem, QStackedWidget,
-    QTextBrowser, QVBoxLayout, QWidget)
+    QFrame, QHBoxLayout, QHeaderView, QLabel,
+    QLayout, QPushButton, QSizePolicy, QSpacerItem,
+    QStackedWidget, QTableView, QTextBrowser, QVBoxLayout,
+    QWidget)
 from . import ui_res_rc
 
 class Ui_MainForm(object):
@@ -522,12 +523,14 @@ class Ui_MainForm(object):
         self.verticalLayout_5.setObjectName(u"verticalLayout_5")
         self.label_3 = QLabel(self.page_3)
         self.label_3.setObjectName(u"label_3")
-        font6 = QFont()
-        font6.setPointSize(36)
-        self.label_3.setFont(font6)
-        self.label_3.setStyleSheet(u"color: rgb(255,255,255);")
+        self.label_3.setTextFormat(Qt.TextFormat.MarkdownText)
 
         self.verticalLayout_5.addWidget(self.label_3)
+
+        self.article_confirm_table = QTableView(self.page_3)
+        self.article_confirm_table.setObjectName(u"article_confirm_table")
+
+        self.verticalLayout_5.addWidget(self.article_confirm_table)
 
         self.stackedWidget.addWidget(self.page_3)
 
@@ -542,7 +545,7 @@ class Ui_MainForm(object):
 
         self.retranslateUi(MainForm)
 
-        self.stackedWidget.setCurrentIndex(0)
+        self.stackedWidget.setCurrentIndex(2)
 
 
         QMetaObject.connectSlotsByName(MainForm)
@@ -586,6 +589,6 @@ class Ui_MainForm(object):
         self.label_2.setText(QCoreApplication.translate("MainForm", u"2. \u8bf7\u7528\u9f20\u6807\u53f3\u952e\u4ee5\u4e0b\u94fe\u63a5\u590d\u5236\u5e76\u7c98\u8d34\u5230\u5fae\u4fe1\u804a\u5929\u6253\u5f00\uff1a", None))
         self.article_list_url.setText(QCoreApplication.translate("MainForm", u"[URL_HOLDER]", None))
         self.step_two_btn.setText(QCoreApplication.translate("MainForm", u"\u5f00\u59cb\u83b7\u53d6", None))
-        self.label_3.setText(QCoreApplication.translate("MainForm", u"\u5f85\u5f00\u53d1", None))
+        self.label_3.setText(QCoreApplication.translate("MainForm", u"<html><head/><body><p align=\"center\"><span style=\" font-size:26pt; font-weight:700; color:#ffffff;\">\u7b2c\u4e09\u6b65 \u786e\u8ba4\u6587\u7ae0\u5217\u8868</span></p></body></html>", None))
     # retranslateUi
 

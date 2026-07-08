@@ -108,12 +108,9 @@ class Crawler:
 
     def stop(self):
         """安全停止 master + 事件循环""" 
-        assert self.master is not None
-        assert self._loop is not None
-        assert self._thread is not None
-
         try:
-            self.master.shutdown() # 告知 DumpMaster 关闭（线程安全）
+            if self.master is not None:
+                self.master.shutdown() # 告知 DumpMaster 关闭（线程安全）
             # self._loop.call_soon_threadsafe(self._loop.stop) # 安排由事件循环所在线程去停止 _loop，避免跨线程 await
         except Exception as e: # pylint: disable=broad-exception-caught
             logger.exception("master _loop stop error: %s", e)
@@ -121,9 +118,10 @@ class Crawler:
             unset_network_proxy() # 取消代理
             self.master = None
 
-        self._thread.join(timeout=5)
-        if self._thread.is_alive():
-            logger.warning("crawler thread did not exit within timeout")
+        if self._thread is not None:
+            self._thread.join(timeout=5)
+            if self._thread.is_alive():
+                logger.warning("crawler thread did not exit within timeout")
 
         self._thread = None
         self._ready_event = None

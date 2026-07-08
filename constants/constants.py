@@ -12,12 +12,14 @@ LISTEN_HOST = "127.0.0.1"
 
 MP_BIZ: str | None = os.getenv("mp_id", None)
 ARTICLE_LIST_URL: str | None = None
+ARTICLE_LIST_URL_TEMPLATE: str = "https://mp.weixin.qq.com/mp/profile_ext?action=home&__biz={biz}#wechat_redirect"
 
 
 __all__ = [
     "LISTEN_PORT",
     "MP_BIZ",
     "ARTICLE_LIST_URL",
+    "ARTICLE_LIST_URL_TEMPLATE",
     "MAX_TIMEOUT_S",
     "MAX_RETRIES",
     "FETCH_INTERVAL_S",
