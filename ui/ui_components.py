@@ -5,6 +5,8 @@ from PySide6.QtCore import Qt, QDate
 from ui.ui_compiled.main_win import Ui_MainForm
 from controllers.threads import GetMpBizThread, GetArticleListThread
 from helpers.config_helper import write_config, del_config
+from models.ui_models import ArticleListViewModel
+
 import constants as consts
 from utils.logging import get_logger
 
@@ -103,12 +105,28 @@ class MainWindow(QWidget, Ui_MainForm):
 
         # 弹窗提示获取到的文章数量
         logger.info("获取到的文章数量: %d", len(all_articles))
-        # msg_box = QMessageBox()
-        # msg_box.setWindowTitle("置顶提示")
-        # msg_box.setText(f"获取到的文章列表: {all_articles}")
-        # msg_box.setWindowFlags(msg_box.windowFlags() | Qt.WindowType.WindowStaysOnTopHint)
-        # msg_box.exec()
+  
+        self.article_confirm_table.setModel(ArticleListViewModel(all_articles))
 
+        # 设置表格样式
+        self.article_confirm_table.setStyleSheet("""
+            QTableView::item {
+                text-align: left;
+                padding: 2px 5px;
+                white-space: nowrap;
+                color: #fff;
+            }
+        """)
+ 
+        self.article_confirm_table.setWordWrap(True)
+        # 自适应列宽
+        self.article_confirm_table.horizontalHeader().setStretchLastSection(True)
+        # 双击列分隔自动适配内容宽度
+        self.article_confirm_table.resizeColumnsToContents()
+        # 行高自适应
+        self.article_confirm_table.resizeRowsToContents()
+        # 显示网格线
+        self.article_confirm_table.setShowGrid(True)
 
 
     # 鼠标按下

@@ -64,7 +64,7 @@ def parse_article(article: dict) -> dict:
     new_dict = {
         "title": article["app_msg_ext_info"]["title"],
         "author": article["app_msg_ext_info"]["author"],
-        "publishing_time": article["comm_msg_info"]["datetime"],
+        "publishing_time": str(article["comm_msg_info"]["datetime"]),
         "content_url": article["app_msg_ext_info"]["content_url"],
     }
 
