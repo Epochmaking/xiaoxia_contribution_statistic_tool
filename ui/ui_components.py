@@ -5,7 +5,7 @@ from PySide6.QtCore import Qt, QDate
 from ui.ui_compiled.main_win import Ui_MainForm
 from controllers.threads import GetMpBizThread, GetArticleListThread
 from helpers.config_helper import write_config, del_config
-from models.ui_models import ArticleListViewModel
+from models.ui_models import ArticleListViewModel, HyperlinkDelegate
 
 import constants as consts
 from utils.logging import get_logger
@@ -105,8 +105,11 @@ class MainWindow(QWidget, Ui_MainForm):
 
         # 弹窗提示获取到的文章数量
         logger.info("获取到的文章数量: %d", len(all_articles))
-  
+
         self.article_confirm_table.setModel(ArticleListViewModel(all_articles))
+
+        # 设置超链接委托
+        self.article_confirm_table.setItemDelegateForColumn(3, HyperlinkDelegate())
 
         # 设置表格样式
         self.article_confirm_table.setStyleSheet("""
@@ -115,9 +118,10 @@ class MainWindow(QWidget, Ui_MainForm):
                 padding: 2px 5px;
                 white-space: nowrap;
                 color: #fff;
+                font-size: 14px;
             }
         """)
- 
+
         self.article_confirm_table.setWordWrap(True)
         # 自适应列宽
         self.article_confirm_table.horizontalHeader().setStretchLastSection(True)

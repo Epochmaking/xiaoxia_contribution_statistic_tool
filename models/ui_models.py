@@ -1,8 +1,11 @@
 from datetime import datetime
 
-from PySide6.QtGui import QPainter, QStandardItemModel, QStandardItem
+from PySide6.QtGui import (
+    QPainter, QStandardItemModel, QStandardItem, 
+    QColor, QMouseEvent, QDesktopServices
+)
 from PySide6.QtCore import QModelIndex, QPersistentModelIndex, Qt, QEvent
-from PySide6.QtWidgets import QStyledItemDelegate, QStyleOptionViewItem, QApplication
+from PySide6.QtWidgets import QStyledItemDelegate, QStyleOptionViewItem, QStyle
 
 from models.mapping import article_mapping
 
@@ -28,6 +31,7 @@ class ArticleListViewModel(QStandardItemModel):
             for col, key in enumerate(self.COLUMN_ORDER):
                 item = QStandardItem()
                 if key == "content_url":
+                    item.setForeground(QColor(121, 139, 163))
                     item.setData(article[key], Qt.ItemDataRole.UserRole)
                     item.setData("点击访问", Qt.ItemDataRole.DisplayRole)
                 elif key == "publishing_time":
@@ -45,46 +49,42 @@ class ArticleListViewModel(QStandardItemModel):
 
         logger.info("文章列表视图模型初始化完成, 总行数: %d, 总列数: %d", self.row_count, self.column_count)
 
-# class HyperlinkDelegate(QStyledItemDelegate):
-#     """链接委托类"""
-#     def paint(self, painter: QPainter, option: QStyleOptionViewItem, index: QModelIndex | QPersistentModelIndex) -> None:
-#         """绘制表格单元格"""
-#         url = index.data(Qt.ItemDataRole.UserRole)
+class HyperlinkDelegate(QStyledItemDelegate):
+    """链接委托类"""
+    def paint(
+        self, painter: QPainter, option: QStyleOptionViewItem,
+        index: QModelIndex | QPersistentModelIndex
+    ):
+        """重写绘制方法，支持前景色"""
+        option = QStyleOptionViewItem(option)
+        self.initStyleOption(option, index)
+        painter.save()
+        painter.setFont(option.font)
+        pen = painter.pen()
+        pen.setColor(QColor(121, 139, 163))
+        painter.setPen(pen)
 
-#         if url:
-#             # 使用富文本绘制超链接
-#             doc = QTextDocument()
-#             doc.setHtml(f'<a href="{url}">{index.data()}</a>')
-            
-#             # 设置绘制区域
-#             painter.save()
-            
-#             # 设置选项
-#             opt = QStyleOptionViewItem(option)
-#             self.initStyleOption(opt, index)
-            
-#             # 绘制背景
-#             opt.widget.style().drawControl(
-#                 QStyleOptionViewItem.,
-#                 opt, painter, opt.widget
-#             )
-            
-#             # 绘制文本
-#             painter.translate(opt.rect.left(), opt.rect.top())
-#             clip_rect = QSize(opt.rect.width(), opt.rect.height())
-#             doc.drawContents(painter, clip_rect)
-            
-#             painter.restore()
-#         else:
-#             # 非链接列使用默认绘制
-#             super().paint(painter, option, index)
+        # 计算带边距的绘制区域，与其他单元格保持一致
+        margin = option.widget.style().pixelMetric(
+            QStyle.PixelMetric.PM_FocusFrameHMargin, None, option.widget
+        ) if option.widget else 4
+        text_rect = option.rect.adjusted(margin, 0, -margin, 0)
 
-#     def editorEvent(self, event, model, option, index):
-#         # 处理鼠标点击事件
-#         if event.type() == QEvent.MouseButtonRelease and event.button() == Qt.MouseButton.LeftButton:
-#             url = index.data(Qt.ItemDataRole.UserRole)
-#             if url:
-#                 # 打开链接
-#                 QApplication.desktop().openUrl(url)
-#                 return True
-#         return super().editorEvent(event, model, option, index)
+        painter.drawText(text_rect, int(option.displayAlignment), str(option.text))
+        painter.restore()
+
+    def editorEvent( # pylint: disable=invalid-name
+        self, event: QEvent, model,
+        option: QStyleOptionViewItem,
+        index: QModelIndex | QPersistentModelIndex
+    ):
+        """处理鼠标点击事件"""
+        # 处理鼠标点击事件
+        if isinstance(event, QMouseEvent) and event.type() == QEvent.Type.MouseButtonRelease:
+            if event.button() == Qt.MouseButton.LeftButton:
+                url = index.data(Qt.ItemDataRole.UserRole)
+                if url:
+                    # 打开链接
+                    QDesktopServices.openUrl(url)
+                    return True
+        return super().editorEvent(event, model, option, index)
