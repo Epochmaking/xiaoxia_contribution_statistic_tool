@@ -1,5 +1,9 @@
 from datetime import datetime
 from constants import MAX_ARTICLE_COUNT_PER_REQUEST
+from models.mapping import article_type_mapping
+
+from utils.logging import get_logger
+logger = get_logger(__name__)
 
 def parse_and_crop_article_list(
         articles: list[dict],
@@ -61,11 +65,13 @@ def parse_article(article: dict) -> dict:
     作用：
     1. 解析文章，仅保留title、content_url，author, datetime字段
     """
+    logger.info("parse article: %s", article)
     new_dict = {
         "title": article["app_msg_ext_info"]["title"],
         "author": article["app_msg_ext_info"]["author"],
         "publishing_time": str(article["comm_msg_info"]["datetime"]),
         "content_url": article["app_msg_ext_info"]["content_url"],
+        "type": article_type_mapping.get(str(article["app_msg_ext_info"]["item_show_type"]), "未知类型"),
     }
 
     return new_dict

@@ -6,6 +6,7 @@ from ui.ui_compiled.main_win import Ui_MainForm
 from controllers.threads import GetMpBizThread, GetArticleListThread
 from helpers.config_helper import write_config, del_config
 from models.ui_models import ArticleListViewModel, HyperlinkDelegate
+from ui.ui_helper import set_article_confirm_table
 
 import constants as consts
 from utils.logging import get_logger
@@ -106,31 +107,7 @@ class MainWindow(QWidget, Ui_MainForm):
         # 弹窗提示获取到的文章数量
         logger.info("获取到的文章数量: %d", len(all_articles))
 
-        self.article_confirm_table.setModel(ArticleListViewModel(all_articles))
-
-        # 设置超链接委托
-        self.article_confirm_table.setItemDelegateForColumn(3, HyperlinkDelegate())
-
-        # 设置表格样式
-        self.article_confirm_table.setStyleSheet("""
-            QTableView::item {
-                text-align: left;
-                padding: 2px 5px;
-                white-space: nowrap;
-                color: #fff;
-                font-size: 14px;
-            }
-        """)
-
-        self.article_confirm_table.setWordWrap(True)
-        # 自适应列宽
-        self.article_confirm_table.horizontalHeader().setStretchLastSection(True)
-        # 双击列分隔自动适配内容宽度
-        self.article_confirm_table.resizeColumnsToContents()
-        # 行高自适应
-        self.article_confirm_table.resizeRowsToContents()
-        # 显示网格线
-        self.article_confirm_table.setShowGrid(True)
+        set_article_confirm_table(self.article_confirm_table, all_articles)
 
 
     # 鼠标按下
