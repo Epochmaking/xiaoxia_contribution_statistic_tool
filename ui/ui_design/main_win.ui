@@ -1333,6 +1333,46 @@ QPushButton:hover {
              <item>
               <widget class="QTableView" name="article_confirm_table"/>
              </item>
+             <item>
+              <widget class="QWidget" name="btn_container_3" native="true">
+               <property name="styleSheet">
+                <string notr="true">QPushButton {
+	background: rgb(6, 173, 86);
+	color: rgb(255, 255, 255);
+	border-radius: 10px;
+	font-size: 20px;
+	font-weight: bold;
+}
+QPushButton:hover {
+	background: rgb(6, 156, 76);
+}</string>
+               </property>
+               <layout class="QHBoxLayout" name="horizontalLayout_7">
+                <item>
+                 <widget class="QPushButton" name="step_three_btn">
+                  <property name="sizePolicy">
+                   <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+                    <horstretch>0</horstretch>
+                    <verstretch>0</verstretch>
+                   </sizepolicy>
+                  </property>
+                  <property name="minimumSize">
+                   <size>
+                    <width>200</width>
+                    <height>50</height>
+                   </size>
+                  </property>
+                  <property name="cursor">
+                   <cursorShape>PointingHandCursor</cursorShape>
+                  </property>
+                  <property name="text">
+                   <string>我已确认</string>
+                  </property>
+                 </widget>
+                </item>
+               </layout>
+              </widget>
+             </item>
             </layout>
            </widget>
           </widget>

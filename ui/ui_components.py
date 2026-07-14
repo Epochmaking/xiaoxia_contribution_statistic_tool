@@ -3,10 +3,10 @@ from PySide6.QtWidgets import QWidget, QMessageBox
 from PySide6.QtCore import Qt, QDate
 
 from ui.ui_compiled.main_win import Ui_MainForm
-from controllers.threads import GetMpBizThread, GetArticleListThread
-from helpers.config_helper import write_config, del_config
-from models.ui_models import ArticleListViewModel, HyperlinkDelegate
 from ui.ui_helper import set_article_confirm_table
+from controllers.threads import GetMpBizThread, GetArticleListThread, AnalyseThread
+from helpers.config_helper import write_config, del_config
+from exceptions import AnalyseThreadError
 
 import constants as consts
 from utils.logging import get_logger
@@ -30,6 +30,7 @@ class MainWindow(QWidget, Ui_MainForm):
         self.minimize_win_btn.clicked.connect(self.minimize_win_btn_on_click)
         self.step_one_btn_connection = self.step_one_btn.clicked.connect(self.step_one_btn_on_click)
         self.step_two_btn_connection = self.step_two_btn.clicked.connect(self.step_two_btn_on_click)
+        self.step_three_btn_connection = self.step_three_btn.clicked.connect(self.step_three_btn_on_click)
         self.reget_biz_btn_connection = self.reget_biz_btn.clicked.connect(self.reget_biz_btn_on_click)
 
         # 初始化显示已获取的BIZ
@@ -55,6 +56,10 @@ class MainWindow(QWidget, Ui_MainForm):
         # 注册线程
         self.get_mp_biz_thread = None
         self.get_article_list_thread = None
+        self.analyse_thread = None
+
+        # 注册变量
+        self.article_list = []
 
     # 步骤一任务完成
     def get_mp_biz_task_over(self, biz_result: str):
@@ -99,8 +104,25 @@ class MainWindow(QWidget, Ui_MainForm):
             self.get_article_list_thread.task_over.disconnect()
             self.get_article_list_thread = None
 
-        # 绑定按钮为下一步按钮
         self.step_start = False
+
+        if len(all_articles) == 0:
+            msg_box = QMessageBox()
+            msg_box.setWindowTitle("置顶提示")
+            msg_box.setText("获取失败，请检查网络连接或稍后再试")
+            msg_box.setWindowFlags(msg_box.windowFlags() | Qt.WindowType.WindowStaysOnTopHint)
+            msg_box.exec()
+
+            # 绑定按钮为开始获取按钮
+            self.step_two_btn.setText("开始获取")
+            self.step_two_btn.disconnect(self.step_two_btn_connection)
+            self.step_two_btn_connection = self.step_two_btn.clicked.connect(self.step_two_btn_on_click)
+            return
+        
+        # 写入变量
+        self.article_list = all_articles
+
+        # 绑定按钮为下一步按钮
         self.step_two_btn.disconnect(self.step_two_btn_connection)
         self.go_to_next_step()
 
@@ -108,6 +130,18 @@ class MainWindow(QWidget, Ui_MainForm):
         logger.info("获取到的文章数量: %d", len(all_articles))
 
         set_article_confirm_table(self.article_confirm_table, all_articles)
+
+    def analyse_thread_article_list_persist_ok(self):
+        """分析线程文章列表写入数据库完成"""
+        logger.info("分析线程文章列表写入数据库完成")
+        msg_box = QMessageBox()
+        msg_box.setWindowTitle("置顶提示")
+        msg_box.setText("分析线程文章列表写入数据库完成")
+        msg_box.setWindowFlags(msg_box.windowFlags() | Qt.WindowType.WindowStaysOnTopHint)
+        msg_box.exec()
+        self.step_three_btn.setText("结束")
+        self.step_start = False
+        self.step_three_btn.disconnect(self.step_three_btn_connection)
 
 
     # 鼠标按下
@@ -215,3 +249,26 @@ class MainWindow(QWidget, Ui_MainForm):
                 self.get_article_list_thread.stop()
                 self.get_article_list_thread.task_over.disconnect()
                 self.get_article_list_thread = None
+
+    def step_three_btn_on_click(self):
+        """步骤三按钮点击事件"""
+        if not self.step_start:
+            self.step_start = True
+            self.step_three_btn.setText("停止分析")
+            logger.info("开始分析文章数据")
+            self.analyse_thread = AnalyseThread(self.article_list)
+            self.analyse_thread.article_list_persist_ok.connect(self.analyse_thread_article_list_persist_ok)
+            try:
+                self.analyse_thread.start()
+            except AnalyseThreadError as e:
+                logger.error("分析失败: %s", e)
+                if self.analyse_thread is not None:
+                    self.analyse_thread.stop()
+        else:
+            self.step_start = False
+            self.step_three_btn.setText("开始分析")
+            logger.info("停止分析文章数据")
+            if self.analyse_thread is not None:
+                self.analyse_thread.stop()
+                self.analyse_thread.article_list_persist_ok.disconnect()
+                self.analyse_thread = None

@@ -10,4 +10,5 @@ dependencies = [
     "pathlib>=1.0.1",
     "pyside6>=6.11.1",
     "selenium>=4.44.0",
+    "sqlalchemy>=2.0.51",
 ]

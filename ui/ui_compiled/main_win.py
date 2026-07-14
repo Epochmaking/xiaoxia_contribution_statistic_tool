@@ -532,6 +532,32 @@ class Ui_MainForm(object):
 
         self.verticalLayout_5.addWidget(self.article_confirm_table)
 
+        self.btn_container_3 = QWidget(self.page_3)
+        self.btn_container_3.setObjectName(u"btn_container_3")
+        self.btn_container_3.setStyleSheet(u"QPushButton {\n"
+"	background: rgb(6, 173, 86);\n"
+"	color: rgb(255, 255, 255);\n"
+"	border-radius: 10px;\n"
+"	font-size: 20px;\n"
+"	font-weight: bold;\n"
+"}\n"
+"QPushButton:hover {\n"
+"	background: rgb(6, 156, 76);\n"
+"}")
+        self.horizontalLayout_7 = QHBoxLayout(self.btn_container_3)
+        self.horizontalLayout_7.setObjectName(u"horizontalLayout_7")
+        self.step_three_btn = QPushButton(self.btn_container_3)
+        self.step_three_btn.setObjectName(u"step_three_btn")
+        sizePolicy.setHeightForWidth(self.step_three_btn.sizePolicy().hasHeightForWidth())
+        self.step_three_btn.setSizePolicy(sizePolicy)
+        self.step_three_btn.setMinimumSize(QSize(200, 50))
+        self.step_three_btn.setCursor(QCursor(Qt.CursorShape.PointingHandCursor))
+
+        self.horizontalLayout_7.addWidget(self.step_three_btn)
+
+
+        self.verticalLayout_5.addWidget(self.btn_container_3)
+
         self.stackedWidget.addWidget(self.page_3)
 
         self.verticalLayout_2.addWidget(self.stackedWidget)
@@ -590,5 +616,6 @@ class Ui_MainForm(object):
         self.article_list_url.setText(QCoreApplication.translate("MainForm", u"[URL_HOLDER]", None))
         self.step_two_btn.setText(QCoreApplication.translate("MainForm", u"\u5f00\u59cb\u83b7\u53d6", None))
         self.label_3.setText(QCoreApplication.translate("MainForm", u"<html><head/><body><p align=\"center\"><span style=\" font-size:26pt; font-weight:700; color:#ffffff;\">\u7b2c\u4e09\u6b65 \u786e\u8ba4\u6587\u7ae0\u5217\u8868</span></p></body></html>", None))
+        self.step_three_btn.setText(QCoreApplication.translate("MainForm", u"\u6211\u5df2\u786e\u8ba4", None))
     # retranslateUi
 

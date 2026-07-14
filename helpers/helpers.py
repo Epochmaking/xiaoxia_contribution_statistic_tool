@@ -2,7 +2,10 @@ from datetime import datetime
 from constants import MAX_ARTICLE_COUNT_PER_REQUEST
 from models.mapping import article_type_mapping
 
+from database.db import get_session
+from models.article_models import Article
 from utils.logging import get_logger
+
 logger = get_logger(__name__)
 
 def parse_and_crop_article_list(
@@ -75,3 +78,21 @@ def parse_article(article: dict) -> dict:
     }
 
     return new_dict
+
+def persist_articles_to_db(article_list: list[dict]) -> None:
+    """
+    作用：
+    将文章列表持久化到数据库
+    """
+    try:
+        with get_session() as session:
+            for article in article_list:
+                article_in_db = Article(**article)
+                article_in_db.publishing_time = datetime.fromtimestamp(int(article["publishing_time"])) # type: ignore
+                session.add(article_in_db)
+            session.commit()
+    except Exception as e:
+        logger.error("persist articles to db failed: %s", e)
+        raise e
+
+    logger.info("articles has been persisted to db")

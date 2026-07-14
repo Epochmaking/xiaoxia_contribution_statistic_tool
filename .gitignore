@@ -3,3 +3,4 @@
 *.pyc
 __pycache__/
 分页接口返回数据.txt
+*.db

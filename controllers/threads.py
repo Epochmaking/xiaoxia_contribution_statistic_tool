@@ -4,8 +4,9 @@ from PySide6.QtCore import Signal
 from PySide6.QtCore import QThread
 
 from controllers.crawler import MpBizCrawler, ArticleListCrawler
-from helpers.helpers import parse_and_crop_article_list
+from helpers.helpers import parse_and_crop_article_list, persist_articles_to_db
 from constants import MAX_RETRIES, FETCH_INTERVAL_S
+from exceptions.exceptions import AnalyseThreadError
 
 from utils import logging
 
@@ -72,6 +73,36 @@ class GetArticleListThread(QThread):
                     break
                 time.sleep(0.5)
 
+            # ========== 调试用 ==========
+            if True:
+                all_articles = [
+                    {
+                        "title": "今天，厦大获中共中央表彰！",
+                        "author": "厦门大学",
+                        "publishing_time": "1782897820",
+                        "content_url": "http://mp.weixin.qq.com/s?__biz=MzA3OTM1MTIzNQ==&amp;mid=2653264807&amp;idx=1&amp;sn=e4ce0b28f1ed01aa5e9634a79454b3fd&amp;chksm=85fc369d045317a55e5750e0727426eba5111f306142bfa15905b7fe34b17934ed136de0973c&amp;scene=27#wechat_redirect",
+                        "type": "图文",
+                    },
+                    {
+                        "title": "100年囊萤星火！105年向党同行！",
+                        "author": "厦门大学",
+                        "publishing_time": "1782869714",
+                        "content_url": "http://mp.weixin.qq.com/s?__biz=MzA3OTM1MTIzNQ==&amp;mid=2653264778&amp;idx=1&amp;sn=5ef43eec88ab383f861b58fa69ab8503&amp;chksm=850a2ef041f5536a16f256cc64cd6a487c9f90bf7102c71d580fd3f461a980e8d8c4195b723d&amp;scene=27#wechat_redirect",
+                        "type": "图文",
+                    },
+                    {
+                        "title": "囊萤星火燃夏夜，厦大青年正当时✨",
+                        "author": "",
+                        "publishing_time": "1783425868",
+                        "content_url": "https://mp.weixin.qq.com/s?__biz=MzA3OTM1MTIzNQ==&amp;mid=2653265026&amp;idx=1&amp;sn=5a9ef44ff50da61fa33947793e303759&amp;chksm=85c47c7e4b0b2a4534ff2481d3ba521f5cc8fcdb22ac44e682afb6cda86dae7fab49c0991b7a&amp;scene=27#wechat_redirect",
+                        "type": "图文",
+                    },
+                ]
+                time.sleep(3)
+                self.task_over.emit(all_articles)
+                return
+
+
             # ========== 示例：循环拉取多页 ==========
             all_articles = []
             offset = 0
@@ -122,3 +153,34 @@ class GetArticleListThread(QThread):
         """停止线程"""
         self.to_stop = True
         self.wait()
+
+
+class AnalyseThread(QThread):
+    """
+    分析线程类
+    """
+    article_list_persist_ok = Signal()
+    def __init__(self, article_list: list[dict]):
+        super().__init__()
+        # self.to_stop = False # 停止thread标志
+        self.article_list = article_list
+
+    def run(self):
+        """
+        分析线程运行方法
+        """
+        try:
+            # 将确认好的文章列表写入数据库
+            persist_articles_to_db(self.article_list)
+            self.article_list_persist_ok.emit()
+        except Exception as e:
+            logger.error("分析线程运行失败: %s", e)
+            raise AnalyseThreadError(f"分析线程运行失败: {str(e)}") from e
+
+
+    def stop(self):
+        """
+        分析线程停止方法
+        """
+        # 强制停止线程
+        self.terminate()
