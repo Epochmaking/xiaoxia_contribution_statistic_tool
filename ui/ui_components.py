@@ -4,9 +4,9 @@ from PySide6.QtCore import Qt, QDate
 
 from ui.ui_compiled.main_win import Ui_MainForm
 from ui.ui_helper import set_article_confirm_table
-from controllers.threads import GetMpBizThread, GetArticleListThread, AnalyseThread
+from controllers.threads import GetMpBizThread, GetArticleListThread, GetArticleContentThread
 from helpers.config_helper import write_config, del_config
-from exceptions import AnalyseThreadError
+from exceptions import GetArticleContentError
 
 import constants as consts
 from utils.logging import get_logger
@@ -56,7 +56,7 @@ class MainWindow(QWidget, Ui_MainForm):
         # 注册线程
         self.get_mp_biz_thread = None
         self.get_article_list_thread = None
-        self.analyse_thread = None
+        self.get_article_content_thread = None
 
         # 注册变量
         self.article_list = []
@@ -118,7 +118,7 @@ class MainWindow(QWidget, Ui_MainForm):
             self.step_two_btn.disconnect(self.step_two_btn_connection)
             self.step_two_btn_connection = self.step_two_btn.clicked.connect(self.step_two_btn_on_click)
             return
-        
+
         # 写入变量
         self.article_list = all_articles
 
@@ -131,17 +131,38 @@ class MainWindow(QWidget, Ui_MainForm):
 
         set_article_confirm_table(self.article_confirm_table, all_articles)
 
-    def analyse_thread_article_list_persist_ok(self):
+    def get_article_content_thread_article_list_persist_ok(self):
         """分析线程文章列表写入数据库完成"""
         logger.info("分析线程文章列表写入数据库完成")
         msg_box = QMessageBox()
         msg_box.setWindowTitle("置顶提示")
         msg_box.setText("分析线程文章列表写入数据库完成")
         msg_box.setWindowFlags(msg_box.windowFlags() | Qt.WindowType.WindowStaysOnTopHint)
-        msg_box.exec()
+        msg_box.show()
         self.step_three_btn.setText("结束")
         self.step_start = False
         self.step_three_btn.disconnect(self.step_three_btn_connection)
+
+    def need_verify(self):
+        """需要验证：用户点击确认后回传信号给爬虫线程"""
+        logger.info("需要验证 - 弹出提示等待用户完成浏览器验证后点击确认")
+        msg_box = QMessageBox()
+        msg_box.setWindowTitle("置顶提示")
+        msg_box.setText("请在弹出的浏览器窗口中完成人机验证，完成后请点击【确认】以继续爬取。")
+        msg_box.setStandardButtons(QMessageBox.StandardButton.Ok | QMessageBox.StandardButton.Cancel)
+        msg_box.setWindowFlags(msg_box.windowFlags() | Qt.WindowType.WindowStaysOnTopHint)
+        ret = msg_box.exec()
+
+        # 关键：回传信号给爬虫，告诉它"用户已操作，可继续"
+        ok = (ret == QMessageBox.StandardButton.Ok)
+        if (
+            self.get_article_content_thread is not None
+            and self.get_article_content_thread.crawler is not None
+        ):
+            self.get_article_content_thread.crawler.signals.verify_done.emit(ok)
+            logger.info(f"已向爬虫发出验证完成信号: ok={ok}")
+        else:
+            logger.warning("未获取到活跃的爬虫对象，无法回传验证信号")
 
 
     # 鼠标按下
@@ -256,19 +277,22 @@ class MainWindow(QWidget, Ui_MainForm):
             self.step_start = True
             self.step_three_btn.setText("停止分析")
             logger.info("开始分析文章数据")
-            self.analyse_thread = AnalyseThread(self.article_list)
-            self.analyse_thread.article_list_persist_ok.connect(self.analyse_thread_article_list_persist_ok)
+
+            self.get_article_content_thread = GetArticleContentThread(self.article_list)
+            self.get_article_content_thread.article_list_persist_ok.connect(self.get_article_content_thread_article_list_persist_ok)
+            self.get_article_content_thread.need_user_verify.connect(self.need_verify) # 连接人机验证信号（线程一启动后，crawler创建即转发到此信号）
+
             try:
-                self.analyse_thread.start()
-            except AnalyseThreadError as e:
+                self.get_article_content_thread.start()
+            except GetArticleContentError as e:
                 logger.error("分析失败: %s", e)
-                if self.analyse_thread is not None:
-                    self.analyse_thread.stop()
+                if self.get_article_content_thread is not None:
+                    self.get_article_content_thread.stop()
         else:
             self.step_start = False
             self.step_three_btn.setText("开始分析")
             logger.info("停止分析文章数据")
-            if self.analyse_thread is not None:
-                self.analyse_thread.stop()
-                self.analyse_thread.article_list_persist_ok.disconnect()
-                self.analyse_thread = None
+            if self.get_article_content_thread is not None:
+                self.get_article_content_thread.stop()
+                self.get_article_content_thread.article_list_persist_ok.disconnect()
+                self.get_article_content_thread = None

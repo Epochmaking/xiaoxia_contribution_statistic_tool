@@ -1,9 +1,9 @@
 from datetime import datetime
 from constants import MAX_ARTICLE_COUNT_PER_REQUEST
 from models.mapping import article_type_mapping
+from models.article_models import Article
 
 from database.db import get_session
-from models.article_models import Article
 from utils.logging import get_logger
 
 logger = get_logger(__name__)
@@ -95,4 +95,4 @@ def persist_articles_to_db(article_list: list[dict]) -> None:
         logger.error("persist articles to db failed: %s", e)
         raise e
 
-    logger.info("articles has been persisted to db")
+    logger.info(f"{len(article_list)} 篇文章已持久化到数据库")

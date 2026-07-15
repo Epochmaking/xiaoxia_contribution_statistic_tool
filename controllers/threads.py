@@ -4,9 +4,10 @@ from PySide6.QtCore import Signal
 from PySide6.QtCore import QThread
 
 from controllers.crawler import MpBizCrawler, ArticleListCrawler
+from controllers.content_crawler import ContentCrawler
 from helpers.helpers import parse_and_crop_article_list, persist_articles_to_db
 from constants import MAX_RETRIES, FETCH_INTERVAL_S
-from exceptions.exceptions import AnalyseThreadError
+from exceptions.exceptions import GetArticleContentError
 
 from utils import logging
 
@@ -155,32 +156,50 @@ class GetArticleListThread(QThread):
         self.wait()
 
 
-class AnalyseThread(QThread):
+class GetArticleContentThread(QThread):
     """
-    分析线程类
+    获取文章内容线程类
     """
     article_list_persist_ok = Signal()
+    need_user_verify = Signal()      # 转发 ContentCrawler.need_user_verify
     def __init__(self, article_list: list[dict]):
         super().__init__()
         # self.to_stop = False # 停止thread标志
         self.article_list = article_list
+        self.crawler: ContentCrawler | None = None
 
     def run(self):
         """
-        分析线程运行方法
+        运行方法
         """
         try:
             # 将确认好的文章列表写入数据库
             persist_articles_to_db(self.article_list)
             self.article_list_persist_ok.emit()
-        except Exception as e:
-            logger.error("分析线程运行失败: %s", e)
-            raise AnalyseThreadError(f"分析线程运行失败: {str(e)}") from e
+            self.crawler = ContentCrawler()
+            # 转发爬虫的 need_user_verify 信号到线程自身，GUI 层连接线程信号即可
+            self.crawler.signals.need_user_verify.connect(self.need_user_verify.emit)
+            # 同时把日志也转发出来（供未来扩展）
+            #self.crawler.signals.log_msg.connect(lambda s: logger.info(s))
+            self.crawler.crawl_all_articles()
 
+        except Exception as e:
+            logger.error("获取文章内容失败: %s", e)
+            raise GetArticleContentError(f"获取文章内容失败: {str(e)}") from e
 
     def stop(self):
         """
-        分析线程停止方法
+        停止方法
         """
         # 强制停止线程
-        self.terminate()
+        try:
+            if self.crawler:
+                # 如果爬虫当前正阻塞在人机验证等待上，先唤醒它以避免死锁
+                try:
+                    self.crawler._verify_evt.set()  # pylint: disable=protected-access
+                except Exception:
+                    pass
+                self.crawler.close_all_resource()
+        finally:
+            self.terminate()
+            self.crawler = None

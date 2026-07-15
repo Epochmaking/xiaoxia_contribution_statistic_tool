@@ -6,7 +6,7 @@ from models.base_model import Base
 class Article(Base):
     """
     文章模型
-    文章模型包含文章的标题、作者、发布时间时间、内容URL、类型、作者列表等字段。
+    文章模型包含文章的标题、作者、发布时间时间、内容URL、类型、作者列表、阅读量等字段。
     """
     __tablename__ = 'articles'
 
@@ -17,3 +17,4 @@ class Article(Base):
     content_url: Mapped[str] = mapped_column(String(255), index=True)
     type: Mapped[str] = mapped_column(String(16), index=True)
     creators_list: Mapped[str] = mapped_column(String(512), index=True, nullable=True)
+    view_count: Mapped[int] = mapped_column(Integer, nullable=True, default=None)
