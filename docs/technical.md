@@ -10,7 +10,8 @@
 
 - 用户界面：PySide 6 + QTDesigner (界面设计)
 - 数据库：SQLite + PyMySQL (数据库引擎) + SQLAlchemy (ORM框架)
-- 抓包：
+- 抓包：mitm proxy
+- 页面爬虫：playwright
 
 ## 基础配置
 

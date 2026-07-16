@@ -75,7 +75,7 @@ class GetArticleListThread(QThread):
                 time.sleep(0.5)
 
             # ========== 调试用 ==========
-            if True:
+            if False:
                 all_articles = [
                     {
                         "title": "今天，厦大获中共中央表彰！",
@@ -96,6 +96,13 @@ class GetArticleListThread(QThread):
                         "author": "",
                         "publishing_time": "1783425868",
                         "content_url": "https://mp.weixin.qq.com/s?__biz=MzA3OTM1MTIzNQ==&amp;mid=2653265026&amp;idx=1&amp;sn=5a9ef44ff50da61fa33947793e303759&amp;chksm=85c47c7e4b0b2a4534ff2481d3ba521f5cc8fcdb22ac44e682afb6cda86dae7fab49c0991b7a&amp;scene=27#wechat_redirect",
+                        "type": "图文",
+                    },
+                    {
+                        "title": "厦园的凤凰花，红了",
+                        "author": "",
+                        "publishing_time": "1782025868",
+                        "content_url": "https://mp.weixin.qq.com/s/A8KQLaCUVTQr4057aCWNIg",
                         "type": "图文",
                     },
                 ]

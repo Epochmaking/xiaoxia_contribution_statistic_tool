@@ -6,6 +6,7 @@ from playwright.sync_api import sync_playwright, Page
 from PySide6.QtCore import QObject, Signal, Qt
 
 from database.db import get_session
+from llm.llm_parse import parse_creator_list_by_llm, format_creator_list_by_llm
 from models.article_models import Article
 import constants as consts
 
@@ -206,11 +207,13 @@ class ContentCrawler:
         # creator_info = page.locator(".author-info").text_content()
         # 获取页面全部纯文本
         full_text = page.evaluate("() => document.body.innerText")
-        test_text = full_text[:100]
-        logger.info(f"当前文章：{page.title}，测试文本: {test_text}")
+        crop_text = full_text[-300:] # 取最后300个字符
+        creator_list = parse_creator_list_by_llm(crop_text)
+        formatted_creator_list = format_creator_list_by_llm(creator_list)
         return {
             "view_count": 0,
-            "creator_list": test_text,
+            "creator_list": creator_list,
+            "formatted_creator_list": formatted_creator_list,
         }
     
     def crawl_all_articles(self):
@@ -293,7 +296,8 @@ class ContentCrawler:
                 # 解析文章数据
                 data = self.parse_article_data(page)
                 if not data:
-                    self.signals.log_msg.emit(f"{url} 解析数据为空，跳过")
+                    logger.error(f"{url} 解析数据为空")
+                    self.signals.log_msg.emit(f"{url} 解析数据为空")
                     continue
 
                 # 写入数据库：单独开db会话，避免长连接
@@ -302,8 +306,15 @@ class ContentCrawler:
                     if target:
                         target.view_count = data["view_count"]
                         target.creators_list = data["creator_list"]
+                        target.formatted_creators_list = json.dumps(data["formatted_creator_list"], ensure_ascii=False)
                         db_session.commit()
+                        logger.info(
+                            f"更新成功 ID:{article.id}, 题目：《{article.title}》，阅读量：{data['view_count']},\n"
+                            f"落款信息：{data['creator_list']}, 格式化作者列表：{data['formatted_creator_list']}"
+                        )
                         self.signals.log_msg.emit(f"更新成功 ID:{article.id}")
+                    else:
+                        logger.warning(f"数据库中未找到 ID={article.id} 的文章，跳过写入")
 
                 # 每次成功解析后更新内存会话缓存
                 self.save_context_to_memory()
@@ -319,17 +330,3 @@ class ContentCrawler:
         finally:
             # 无论成功失败，强制关闭浏览器
             self.close_all_resource()
-
-def get_article_info():
-    """
-    获取文章信息，具体包括：
-    1. 落款信息
-    2. 阅读量
-
-    业务逻辑：
-    获取数据库中文章内容url，遍历每个url，获取文章信息和阅读量信息，写入数据库中的creator_list和view_count字段
-    对于每个url，如果能正常获取到文章内容，则继续获取，直到遇到用户验证界面，暂停并等待用户操作
-    对于用户验证界面，弹出网页窗口，等用户点击验证按钮后，会加载出文章内容，继续获取文章信息和阅读量信息，写入数据库
-    """
-    # TODO: 阅读量获取待实现
-    pass

@@ -10,5 +10,6 @@ dependencies = [
     "pathlib>=1.0.1",
     "playwright>=1.61.0",
     "pyside6>=6.11.1",
+    "requests>=2.34.2",
     "sqlalchemy>=2.0.51",
 ]

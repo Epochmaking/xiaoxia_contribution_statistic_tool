@@ -1,4 +1,7 @@
 from datetime import datetime
+import requests
+from urllib.parse import urlparse, parse_qs
+
 from constants import MAX_ARTICLE_COUNT_PER_REQUEST
 from models.mapping import article_type_mapping
 from models.article_models import Article
@@ -78,6 +81,65 @@ def parse_article(article: dict) -> dict:
     }
 
     return new_dict
+
+def get_reader_stats(content_url: str, cookies: str, user_agent: str, appmsg_token: str) -> dict:
+    """
+    作用：
+    1. 从公众号文末原文中提取读者统计信息
+    :param content_url: 公众号文末原文URL
+    :param cookies: 会话cookie
+    :param user_agent: 用户代理
+    :return: 读者统计信息字典
+    """
+    # 1. 解析链接参数
+    params = parse_qs(urlparse(content_url).query)
+    biz = params["__biz"][0]
+    mid = params["mid"][0]
+    idx = params["idx"][0]
+    sn = params["sn"][0]
+
+    headers = {
+        "Cookie": cookies,
+        "User-Agent": user_agent,
+    }
+
+    # 3. 请求阅读量接口
+    api_url = "https://mp.weixin.qq.com/mp/getappmsgext"
+    data = {
+        "__biz": biz,
+        "mid": mid,
+        "idx": idx,
+        "sn": sn,
+        "appmsg_token": appmsg_token,
+        "x5": "0",
+        "scene": "27"
+    }
+
+    stat = None
+    try:
+        res = requests.post(api_url, headers=headers, data=data, timeout=10).json()
+        stat = res["appmsgstat"]
+    except Exception as e:
+        logger.warning("get reader stats failed: %s", e)
+
+    # 4. 解取阅读量、点赞量、旧点赞量
+    if stat is None:
+        return {
+            "view_count": 0,
+            "like_count": 0,
+            "old_like_count": 0,
+        }
+
+    view_count = stat["read_num"] or 0
+    like_count = stat["like_num"] or 0
+    old_like_count = stat["old_like_num"] or 0
+
+
+    return {
+        "view_count": view_count,
+        "like_count": like_count,
+        "old_like_count": old_like_count,
+    }
 
 def persist_articles_to_db(article_list: list[dict]) -> None:
     """
