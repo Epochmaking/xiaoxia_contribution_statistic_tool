@@ -60,6 +60,7 @@ class MainWindow(QWidget, Ui_MainForm):
 
         # 注册变量
         self.article_list = []
+        
 
     # 步骤一任务完成
     def get_mp_biz_task_over(self, biz_result: str):
@@ -278,7 +279,7 @@ class MainWindow(QWidget, Ui_MainForm):
             self.step_three_btn.setText("停止分析")
             logger.info("开始分析文章数据")
 
-            self.get_article_content_thread = GetArticleContentThread(self.article_list)
+            self.get_article_content_thread = GetArticleContentThread(self.article_list, self.to_calc_fee.isChecked())
             self.get_article_content_thread.article_list_persist_ok.connect(self.get_article_content_thread_article_list_persist_ok)
             self.get_article_content_thread.need_user_verify.connect(self.need_verify) # 连接人机验证信号（线程一启动后，crawler创建即转发到此信号）
 

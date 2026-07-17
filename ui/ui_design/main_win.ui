@@ -637,7 +637,7 @@ QPushButton:hover {
             <string notr="true"/>
            </property>
            <property name="currentIndex">
-            <number>2</number>
+            <number>1</number>
            </property>
            <widget class="QWidget" name="page_1">
             <property name="autoFillBackground">
@@ -1039,6 +1039,72 @@ QCalendarWidget QAbstractItemView:disabled
                  </widget>
                 </item>
                 <item>
+                 <widget class="QLabel" name="label_5">
+                  <property name="font">
+                   <font>
+                    <pointsize>16</pointsize>
+                   </font>
+                  </property>
+                  <property name="styleSheet">
+                   <string notr="true">color: rgb(255, 255, 255);</string>
+                  </property>
+                  <property name="text">
+                   <string>   是否同时统计稿费</string>
+                  </property>
+                 </widget>
+                </item>
+                <item>
+                 <widget class="QCheckBox" name="to_calc_fee">
+                  <property name="sizePolicy">
+                   <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+                    <horstretch>0</horstretch>
+                    <verstretch>0</verstretch>
+                   </sizepolicy>
+                  </property>
+                  <property name="minimumSize">
+                   <size>
+                    <width>15</width>
+                    <height>15</height>
+                   </size>
+                  </property>
+                  <property name="styleSheet">
+                   <string notr="true">QCheckBox {
+    font-size: 12px;
+    color: #333333;
+    spacing: 8px; /* 方框和文字间距 */
+}
+/* 复选框方框基础 */
+QCheckBox::indicator {
+    width: 18px;
+    height: 18px;
+    border: 3px solid #666666;
+    border-radius: 4px; /* 圆角方框 */
+    border-color: rgb(212, 212, 212);
+    background-color: white;
+}
+/* 鼠标悬浮未选中 */
+QCheckBox::indicator:hover {
+    border-color: rgb(6, 173, 86);
+}
+/* 选中状态：绿色背景+绿色边框，原生白色对勾自动出现 */
+QCheckBox::indicator:checked {
+    border-color: rgb(6, 173, 86);
+    background-color: rgb(6, 173, 86);
+    /* 替换image，使用Qt内置勾选符号，白色 */
+    border-image: none;
+    image: url(&quot;:/images/checkmark_white&quot;);
+}
+</string>
+                  </property>
+                  <property name="text">
+                   <string/>
+                  </property>
+                  <property name="tristate">
+                   <bool>false</bool>
+                  </property>
+                 </widget>
+                </item>
+                <item>
                  <spacer name="horizontalSpacer">
                   <property name="orientation">
                    <enum>Qt::Orientation::Horizontal</enum>
@@ -1074,7 +1140,7 @@ QCalendarWidget QAbstractItemView:disabled
                    <string notr="true">color: rgb(255, 255, 255);</string>
                   </property>
                   <property name="text">
-                   <string>2. 请用鼠标右键以下链接复制并粘贴到微信聊天打开：</string>
+                   <string>3. 请用鼠标右键以下链接复制并粘贴到微信聊天打开：</string>
                   </property>
                  </widget>
                 </item>

@@ -15,11 +15,11 @@ from PySide6.QtGui import (QBrush, QColor, QConicalGradient, QCursor,
     QFont, QFontDatabase, QGradient, QIcon,
     QImage, QKeySequence, QLinearGradient, QPainter,
     QPalette, QPixmap, QRadialGradient, QTransform)
-from PySide6.QtWidgets import (QAbstractSpinBox, QApplication, QDateEdit, QDateTimeEdit,
-    QFrame, QHBoxLayout, QHeaderView, QLabel,
-    QLayout, QPushButton, QSizePolicy, QSpacerItem,
-    QStackedWidget, QTableView, QTextBrowser, QVBoxLayout,
-    QWidget)
+from PySide6.QtWidgets import (QAbstractSpinBox, QApplication, QCheckBox, QDateEdit,
+    QDateTimeEdit, QFrame, QHBoxLayout, QHeaderView,
+    QLabel, QLayout, QPushButton, QSizePolicy,
+    QSpacerItem, QStackedWidget, QTableView, QTextBrowser,
+    QVBoxLayout, QWidget)
 from . import ui_res_rc
 
 class Ui_MainForm(object):
@@ -420,6 +420,50 @@ class Ui_MainForm(object):
 
         self.horizontalLayout_5.addWidget(self.date_edit)
 
+        self.label_5 = QLabel(self.widget)
+        self.label_5.setObjectName(u"label_5")
+        self.label_5.setFont(font3)
+        self.label_5.setStyleSheet(u"color: rgb(255, 255, 255);")
+
+        self.horizontalLayout_5.addWidget(self.label_5)
+
+        self.to_calc_fee = QCheckBox(self.widget)
+        self.to_calc_fee.setObjectName(u"to_calc_fee")
+        sizePolicy.setHeightForWidth(self.to_calc_fee.sizePolicy().hasHeightForWidth())
+        self.to_calc_fee.setSizePolicy(sizePolicy)
+        self.to_calc_fee.setMinimumSize(QSize(15, 15))
+        self.to_calc_fee.setStyleSheet(u"QCheckBox {\n"
+"    font-size: 12px;\n"
+"    color: #333333;\n"
+"    spacing: 8px; /* \u65b9\u6846\u548c\u6587\u5b57\u95f4\u8ddd */\n"
+"}\n"
+"/* \u590d\u9009\u6846\u65b9\u6846\u57fa\u7840 */\n"
+"QCheckBox::indicator {\n"
+"    width: 18px;\n"
+"    height: 18px;\n"
+"    border: 3px solid #666666;\n"
+"    border-radius: 4px; /* \u5706\u89d2\u65b9\u6846 */\n"
+"    border-color: rgb(212, 212, 212);\n"
+"    background-color: white;\n"
+"}\n"
+"/* \u9f20\u6807\u60ac\u6d6e\u672a\u9009\u4e2d */\n"
+"QCheckBox::indicator:hover {\n"
+"    border-color: rgb(6, 173, 86);\n"
+"}\n"
+"/* \u9009\u4e2d\u72b6\u6001\uff1a\u7eff\u8272\u80cc\u666f+\u7eff\u8272\u8fb9\u6846\uff0c\u539f\u751f\u767d\u8272\u5bf9\u52fe\u81ea\u52a8\u51fa\u73b0 */\n"
+"QCheckBox::indicator:checked {\n"
+"    border-color: rgb(6, 173, 86);\n"
+"    background-color: rgb(6, 173, 86);\n"
+"    /* \u66ff\u6362image\uff0c\u4f7f\u7528Qt\u5185\u7f6e\u52fe\u9009\u7b26\u53f7\uff0c\u767d\u8272 */\n"
+"    border-image: none;\n"
+"    image: url(\":/images/checkmark_white\");\n"
+""
+                        "}\n"
+"")
+        self.to_calc_fee.setTristate(False)
+
+        self.horizontalLayout_5.addWidget(self.to_calc_fee)
+
         self.horizontalSpacer = QSpacerItem(40, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
 
         self.horizontalLayout_5.addItem(self.horizontalSpacer)
@@ -571,7 +615,7 @@ class Ui_MainForm(object):
 
         self.retranslateUi(MainForm)
 
-        self.stackedWidget.setCurrentIndex(2)
+        self.stackedWidget.setCurrentIndex(1)
 
 
         QMetaObject.connectSlotsByName(MainForm)
@@ -612,7 +656,9 @@ class Ui_MainForm(object):
 "<p align=\"center\" style=\"-qt-paragraph-type:empty; margin-top:15px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; color:#ffffff;\"><br /></p></body></html>", None))
         self.label.setText(QCoreApplication.translate("MainForm", u"1. \u8bf7\u9009\u62e9\u8981\u7edf\u8ba1\u7684\u6708\u4efd\uff1a", None))
         self.date_edit.setDisplayFormat(QCoreApplication.translate("MainForm", u"yyyy/M", None))
-        self.label_2.setText(QCoreApplication.translate("MainForm", u"2. \u8bf7\u7528\u9f20\u6807\u53f3\u952e\u4ee5\u4e0b\u94fe\u63a5\u590d\u5236\u5e76\u7c98\u8d34\u5230\u5fae\u4fe1\u804a\u5929\u6253\u5f00\uff1a", None))
+        self.label_5.setText(QCoreApplication.translate("MainForm", u"   \u662f\u5426\u540c\u65f6\u7edf\u8ba1\u7a3f\u8d39", None))
+        self.to_calc_fee.setText("")
+        self.label_2.setText(QCoreApplication.translate("MainForm", u"3. \u8bf7\u7528\u9f20\u6807\u53f3\u952e\u4ee5\u4e0b\u94fe\u63a5\u590d\u5236\u5e76\u7c98\u8d34\u5230\u5fae\u4fe1\u804a\u5929\u6253\u5f00\uff1a", None))
         self.article_list_url.setText(QCoreApplication.translate("MainForm", u"[URL_HOLDER]", None))
         self.step_two_btn.setText(QCoreApplication.translate("MainForm", u"\u5f00\u59cb\u83b7\u53d6", None))
         self.label_3.setText(QCoreApplication.translate("MainForm", u"<html><head/><body><p align=\"center\"><span style=\" font-size:26pt; font-weight:700; color:#ffffff;\">\u7b2c\u4e09\u6b65 \u786e\u8ba4\u6587\u7ae0\u5217\u8868</span></p></body></html>", None))

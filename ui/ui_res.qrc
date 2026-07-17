@@ -1,5 +1,6 @@
 <RCC>
   <qresource prefix="/images">
+    <file alias="checkmark_white">assets/checkmark-symbol-white.png</file>
     <file alias="step_1">assets/step_one_instruction.jpg</file>
   </qresource>
 </RCC>

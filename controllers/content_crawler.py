@@ -180,13 +180,13 @@ class ContentCrawler:
         # 正常文章页面
         return False
 
-    def parse_article_data(self, page: Page):
-        """页面解析逻辑：提取落款、阅读量，自行补充选择器"""
+    def parse_article_data(self, page: Page, to_calc_fee: bool):
+        """页面解析逻辑：提取落款、阅读量等信息"""
         # 获取页面全部纯文本
         full_text = page.evaluate("() => document.body.innerText")
         crop_text = full_text[-300:] # 取最后300个字符
         creator_list = parse_creator_list_by_llm(crop_text)
-        formatted_creator_list = format_creator_list_by_llm(creator_list)
+        formatted_creator_list = format_creator_list_by_llm(creator_list) if to_calc_fee else {}
         if consts.TEMPLATE_FLOW is not None:
             reader_stats = get_reader_stats(page.url, consts.TEMPLATE_FLOW)
         else:
@@ -200,7 +200,7 @@ class ContentCrawler:
             "formatted_creator_list": formatted_creator_list,
         }
     
-    def crawl_all_articles(self):
+    def crawl_all_articles(self, to_calc_fee: bool):
         """
         主爬取逻辑，运行在QThread内部。
         流程改进：
@@ -277,7 +277,7 @@ class ContentCrawler:
                     self._set_window_visible(False, page=page)
 
                 # 解析文章数据
-                data = self.parse_article_data(page)
+                data = self.parse_article_data(page, to_calc_fee)
                 if not data:
                     logger.error(f"{url} 解析数据为空")
                     self.signals.log_msg.emit(f"{url} 解析数据为空")
@@ -302,10 +302,6 @@ class ContentCrawler:
                         self.signals.log_msg.emit(f"更新成功 ID:{article.id}")
                     else:
                         logger.warning(f"数据库中未找到 ID={article.id} 的文章，跳过写入")
-
-                # 每次成功解析后更新内存会话缓存
-                # self.save_context_to_memory()
-
 
             logger.info("全部文章爬取完成")
             self.signals.log_msg.emit("全部文章爬取完成")

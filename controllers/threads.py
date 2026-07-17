@@ -165,9 +165,10 @@ class GetArticleContentThread(QThread):
     """
     article_list_persist_ok = Signal()
     need_user_verify = Signal()      # 转发 ContentCrawler.need_user_verify
-    def __init__(self, article_list: list[dict]):
+    def __init__(self, article_list: list[dict], to_calc_fee: bool):
         super().__init__()
         # self.to_stop = False # 停止thread标志
+        self.to_calc_fee = to_calc_fee
         self.article_list = article_list
         self.crawler: ContentCrawler | None = None
 
@@ -184,7 +185,7 @@ class GetArticleContentThread(QThread):
             self.crawler.signals.need_user_verify.connect(self.need_user_verify.emit)
             # 同时把日志也转发出来（供未来扩展）
             #self.crawler.signals.log_msg.connect(lambda s: logger.info(s))
-            self.crawler.crawl_all_articles()
+            self.crawler.crawl_all_articles(self.to_calc_fee)
 
         except Exception as e:
             logger.error("获取文章内容失败: %s", e)
