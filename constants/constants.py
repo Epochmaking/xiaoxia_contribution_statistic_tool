@@ -1,5 +1,6 @@
 import os
 import dotenv
+from mitmproxy.http import HTTPFlow
 
 dotenv.load_dotenv("config.ini")
 
@@ -20,6 +21,7 @@ LLM_FETCH_INTERVAL_S: float = float(os.getenv("llm_fetch_interval_s", "1.0"))
 MP_BIZ: str | None = os.getenv("mp_id", None)
 ARTICLE_LIST_URL: str | None = None
 ARTICLE_LIST_URL_TEMPLATE: str = "https://mp.weixin.qq.com/mp/profile_ext?action=home&__biz={biz}#wechat_redirect"
+TEMPLATE_FLOW: HTTPFlow | None = None
 
 
 __all__ = [
@@ -37,4 +39,5 @@ __all__ = [
     "LLM_MODEL",
     "LLM_BACKUP_MODEL",
     "LLM_FETCH_INTERVAL_S",
+    "TEMPLATE_FLOW",
 ]

@@ -7,6 +7,7 @@ from PySide6.QtCore import QObject, Signal, Qt
 
 from database.db import get_session
 from llm.llm_parse import parse_creator_list_by_llm, format_creator_list_by_llm
+from helpers.helpers import get_reader_stats
 from models.article_models import Article
 import constants as consts
 
@@ -210,8 +211,15 @@ class ContentCrawler:
         crop_text = full_text[-300:] # 取最后300个字符
         creator_list = parse_creator_list_by_llm(crop_text)
         formatted_creator_list = format_creator_list_by_llm(creator_list)
+        if consts.TEMPLATE_FLOW is not None:
+            reader_stats = get_reader_stats(page.url, consts.TEMPLATE_FLOW)
+        else:
+            reader_stats = {}
         return {
-            "view_count": 0,
+            "view_count": reader_stats.get("view_count", 0), # 阅读量
+            "heart_count": reader_stats.get("heart_count", 0), # 爱心量
+            "like_count": reader_stats.get("like_count", 0), # 在看量
+            "share_count": reader_stats.get("share_count", 0), # 分享量
             "creator_list": creator_list,
             "formatted_creator_list": formatted_creator_list,
         }
@@ -305,12 +313,16 @@ class ContentCrawler:
                     target = db_session.query(Article).filter(Article.id == article.id).first()
                     if target:
                         target.view_count = data["view_count"]
+                        target.heart_count = data["heart_count"]
+                        target.like_count = data["like_count"]
+                        target.share_count = data["share_count"]
                         target.creators_list = data["creator_list"]
                         target.formatted_creators_list = json.dumps(data["formatted_creator_list"], ensure_ascii=False)
                         db_session.commit()
                         logger.info(
-                            f"更新成功 ID:{article.id}, 题目：《{article.title}》，阅读量：{data['view_count']},\n"
-                            f"落款信息：{data['creator_list']}, 格式化作者列表：{data['formatted_creator_list']}"
+                            f"更新成功 ID:{article.id}, 题目：《{article.title}》\n"
+                            f"阅读量：{data['view_count']}, 爱心量：{data['heart_count']}, 在看量：{data['like_count']}, 分享量：{data['share_count']},\n"
+                            f"落款信息：{data['creator_list']}\n格式化作者列表：{data['formatted_creator_list']}"
                         )
                         self.signals.log_msg.emit(f"更新成功 ID:{article.id}")
                     else:

@@ -1,6 +1,8 @@
 from datetime import datetime
-import requests
 from urllib.parse import urlparse, parse_qs
+import requests
+from mitmproxy.http import HTTPFlow
+
 
 from constants import MAX_ARTICLE_COUNT_PER_REQUEST
 from models.mapping import article_type_mapping
@@ -82,7 +84,7 @@ def parse_article(article: dict) -> dict:
 
     return new_dict
 
-def get_reader_stats(content_url: str, cookies: str, user_agent: str, appmsg_token: str) -> dict:
+def get_reader_stats(content_url: str, template_flow: HTTPFlow) -> dict:
     """
     作用：
     1. 从公众号文末原文中提取读者统计信息
@@ -91,55 +93,76 @@ def get_reader_stats(content_url: str, cookies: str, user_agent: str, appmsg_tok
     :param user_agent: 用户代理
     :return: 读者统计信息字典
     """
-    # 1. 解析链接参数
-    params = parse_qs(urlparse(content_url).query)
-    biz = params["__biz"][0]
-    mid = params["mid"][0]
-    idx = params["idx"][0]
-    sn = params["sn"][0]
-
-    headers = {
-        "Cookie": cookies,
-        "User-Agent": user_agent,
-    }
-
-    # 3. 请求阅读量接口
-    api_url = "https://mp.weixin.qq.com/mp/getappmsgext"
-    data = {
-        "__biz": biz,
-        "mid": mid,
-        "idx": idx,
-        "sn": sn,
-        "appmsg_token": appmsg_token,
-        "x5": "0",
-        "scene": "27"
-    }
-
-    stat = None
+    logger.info("try to get reader stats from %s", content_url)
     try:
-        res = requests.post(api_url, headers=headers, data=data, timeout=10).json()
-        stat = res["appmsgstat"]
-    except Exception as e:
-        logger.warning("get reader stats failed: %s", e)
+        # 1. 解析链接参数
+        content_url = content_url.replace("&amp;", "&")
+        params = parse_qs(urlparse(content_url).query)
+        biz = params["__biz"][0]
+        mid = params["mid"][0]
+        idx = params["idx"][0]
+        sn = params["sn"][0]
 
-    # 4. 解取阅读量、点赞量、旧点赞量
-    if stat is None:
-        return {
-            "view_count": 0,
-            "like_count": 0,
-            "old_like_count": 0,
+        cookies_md = template_flow.request.cookies
+        cookies_str = "; ".join(f"{k}={v}" for k, v in cookies_md.items(multi=True)) if cookies_md else ""
+
+        appmsg_token_values = template_flow.request.query.get_all("appmsg_token")
+        appmsg_token = appmsg_token_values[0] if appmsg_token_values else ""
+
+        user_agent_values = template_flow.request.headers.get_all("User-Agent")
+        user_agent = user_agent_values[0] if user_agent_values else ""
+
+        headers = {
+            "Cookie": cookies_str,
+            "User-Agent": user_agent,
         }
 
-    view_count = stat["read_num"] or 0
-    like_count = stat["like_num"] or 0
-    old_like_count = stat["old_like_num"] or 0
+        # 3. 请求阅读量接口
+        api_url = "https://mp.weixin.qq.com/mp/getappmsgext"
+        data = {
+            "__biz": biz,
+            "mid": mid,
+            "idx": idx,
+            "sn": sn,
+            "appmsg_token": appmsg_token,
+            "x5": "0",
+            "scene": "27",
+            "is_only_read": "1",
+            "is_temp_url": "0",
+            "appmsg_type": "9",
+        }
+
+        logger.info("\ncookies:\n%s\nuser-Agent:\n%s\ndata:\n%s\n", cookies_str, user_agent, data)
+
+        stat = None
+        resp = requests.post(api_url, headers=headers, data=data, timeout=10)
+        logger.info("get reader stats res: %s， status_code: %d", resp.text, resp.status_code)
+        resp.raise_for_status()
+        stat = resp.json()["appmsgstat"]
+
+        # 4. 解取阅读量、点赞量、旧点赞量
+        if stat is None:
+            return {
+                "view_count": 0,
+                "like_count": 0,
+                "old_like_count": 0,
+            }
+
+        view_count = stat["read_num"] or 0
+        like_count = stat["like_num"] or 0
+        old_like_count = stat["old_like_num"] or 0
+        share_num = stat["share_num"] or 0
 
 
-    return {
-        "view_count": view_count,
-        "like_count": like_count,
-        "old_like_count": old_like_count,
-    }
+        return {
+            "view_count": view_count, # 阅读量
+            "heart_count": like_count, # 爱心量
+            "like_count": old_like_count, # 在看量
+            "share_count": share_num, # 分享量
+        }
+    except Exception as e:
+        logger.warning("get reader stats failed: %s", e)
+        return {}
 
 def persist_articles_to_db(article_list: list[dict]) -> None:
     """

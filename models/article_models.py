@@ -19,3 +19,6 @@ class Article(Base):
     creators_list: Mapped[str] = mapped_column(String(512), index=True, nullable=True)
     formatted_creators_list: Mapped[str] = mapped_column(String(512), index=True, nullable=True)
     view_count: Mapped[int] = mapped_column(Integer, nullable=True, default=None)
+    like_count: Mapped[int] = mapped_column(Integer, nullable=True, default=None)
+    heart_count: Mapped[int] = mapped_column(Integer, nullable=True, default=None)
+    share_count: Mapped[int] = mapped_column(Integer, nullable=True, default=None)

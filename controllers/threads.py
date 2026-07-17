@@ -1,4 +1,5 @@
 import time
+import random
 from datetime import datetime
 from PySide6.QtCore import Signal
 from PySide6.QtCore import QThread
@@ -6,6 +7,7 @@ from PySide6.QtCore import QThread
 from controllers.crawler import MpBizCrawler, ArticleListCrawler
 from controllers.content_crawler import ContentCrawler
 from helpers.helpers import parse_and_crop_article_list, persist_articles_to_db
+import constants as consts
 from constants import MAX_RETRIES, FETCH_INTERVAL_S
 from exceptions.exceptions import GetArticleContentError
 
@@ -68,8 +70,9 @@ class GetArticleListThread(QThread):
         try:
             self.crawler.start()
             while not self.to_stop:
-                if self.crawler.has_template():
+                if self.crawler.has_template() and self.crawler.has_cookie_template():
                     logger.info("已捕获到文章列表接口模板，可开始分页拉取")
+                    consts.TEMPLATE_FLOW = self.crawler.get_cookie_template()
                     self.flow_got.emit(True)
                     break
                 time.sleep(0.5)
@@ -128,9 +131,9 @@ class GetArticleListThread(QThread):
 
                 for _ in range(MAX_RETRIES): # 最多尝试MAX_RETRIES次获取文章列表
                     articles = self.crawler.get_article_list(offset, count)
+                    time.sleep(FETCH_INTERVAL_S+random.uniform(-FETCH_INTERVAL_S/2.0, FETCH_INTERVAL_S*2.0))  # 控制请求频率，避免被微信拦截
                     if articles is not None:
                         break
-                    time.sleep(FETCH_INTERVAL_S)  # 控制请求频率，避免被微信拦截
 
                 if articles is None:
                     break

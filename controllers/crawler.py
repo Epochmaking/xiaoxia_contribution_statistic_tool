@@ -24,6 +24,7 @@ class MpBizResponseHandler:
         biz = flow.request.query.get("__biz") or flow.request.query.get("biz")
         if biz is not None:
             logger.info("biz got: %s, flow: %s", biz, flow.request.url)
+            self.template_flow = flow.copy()
             self.biz_result = biz
 
 
@@ -31,6 +32,7 @@ class ArticleListResponseHandler:
     """文章列表URL响应处理类"""
     def __init__(self):
         self.template_flow: http.HTTPFlow | None = None
+        self.template_cookie_flow: http.HTTPFlow | None = None
     def __str__(self):
         return "ArticleListResponseHandler"
     def response(self, flow: http.HTTPFlow):
@@ -42,6 +44,10 @@ class ArticleListResponseHandler:
         if flow.request.query.get("action") == "getmsg":
             logger.info("article list flow got: %s", flow.request.url)
             self.template_flow = flow.copy()
+
+        if flow.request.query.get("action") == "urlcheck":
+            logger.info("urlcheck flow got: %s", flow.request.url)
+            self.template_cookie_flow = flow.copy()
 
 
 class Crawler:
@@ -153,6 +159,18 @@ class ArticleListCrawler(Crawler):
     def has_template(self) -> bool:
         """是否已经捕获到模板 flow"""
         return self.response_handler.template_flow is not None
+    
+    def has_cookie_template(self) -> bool:
+        """是否已经捕获到包含cookie的模板 flow"""
+        return self.response_handler.template_cookie_flow is not None
+    
+    def get_cookie_template(self) -> http.HTTPFlow | None:
+        """获取包含cookie的模板 flow"""
+        return self.response_handler.template_cookie_flow
+    
+    def get_template(self) -> http.HTTPFlow | None:
+        """获取文章列表模板 flow"""
+        return self.response_handler.template_flow
 
     async def _replay_and_wait(self, new_flow: http.HTTPFlow, timeout_s: float = 10.0) -> http.HTTPFlow | None:
         assert self.master is not None
