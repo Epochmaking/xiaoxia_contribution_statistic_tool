@@ -29,6 +29,8 @@ CAPTCHA_TEXT_KEYWORDS = ["环境异常", "前往验证", "人机验证", "安全
 MAX_RETRIES = consts.MAX_RETRIES
 FETCH_INTERVAL_S = consts.FETCH_INTERVAL_S
 
+TEMP_CONTEXT_DIR = consts.TEMP_CONTEXT_DIR
+
 class CrawlSignals(QObject):
     """
     爬虫信号类
@@ -46,9 +48,7 @@ class ContentCrawler:
     def __init__(self):
         self.signals = CrawlSignals()
         self.playwright = None
-        self.browser = None
         self.context = None
-        self.session_cache = None  # 内存存储会话，复用Cookie/Storage
         self._verify_page = None    # 用于人机验证的独立页面
         self._is_visible = False    # 当前浏览器窗口是否可见（面向用户）
         self._verify_evt = threading.Event()  # GUI 阻塞等待事件
@@ -88,34 +88,19 @@ class ContentCrawler:
             self.init_playwright()
         assert self.playwright is not None, "请先初始化Playwright"
         # 始终以 headed 方式启动，通过窗口位置/最小化控制是否"前台可见"
-        self.browser = self.playwright.chromium.launch(
+        self.context = self.playwright.chromium.launch_persistent_context(
+            user_data_dir=TEMP_CONTEXT_DIR,
             headless=False,
             args=[
                 "--disable-blink-features=AutomationControlled",
                 "--window-position=-32000,-32000",  # 启动时移出屏幕外，默认为"后台静默"
                 "--window-size=1280,720",
-            ]
+            ],
+            **CONTEXT_CONFIG.copy()
         )
-        ctx_args = CONTEXT_CONFIG.copy()
-        if self.session_cache:
-            ctx_args["storage_state"] = self.session_cache
-        self.context = self.browser.new_context(**ctx_args)
         self.context.set_default_timeout(100000)  # 全局100s超时
         self._is_visible = False
-        logger.info(f"浏览器初始化完成，默认后台静默模式 (headless launched as headed, hidden off-screen), context_args={ctx_args}")
-
-    def save_context_to_memory(self):
-        """当前上下文存入内存变量"""
-        if self.context:
-            self.session_cache = self.context.storage_state()
-
-    def close_browser(self):
-        """关闭浏览器"""
-        if self.browser:
-            self.browser.close()
-            self.browser = None
-            self.context = None
-            self._verify_page = None
+        logger.info(f"浏览器初始化完成，默认后台静默模式 (headless launched as headed, hidden off-screen), context_args={CONTEXT_CONFIG}")
 
     def _ensure_verify_page(self, source_page=None):
         """确保存在一个用于承载人机验证交互的 page（在同一个 context 下）。"""
@@ -164,22 +149,16 @@ class ContentCrawler:
                 })
             self._is_visible = visible
             logger.info(f"浏览器窗口已切换为: {'前台可见' if visible else '后台静默'}")
-        except Exception as err:
+        except Exception as err: # pylint: disable=broad-exception-caught
             logger.warning(f"切换浏览器窗口可见性失败，降级为仅 bring_to_front: {err}")
             # 降级方案：visible=True 时只把页面调到前台
             if visible and target_page:
-                try:
-                    target_page.bring_to_front()
-                except Exception:
-                    pass
+                target_page.bring_to_front()
 
     def close_all_resource(self):
         """统一释放浏览器资源"""
-        if self.browser:
-            self.browser.close()
         if self.playwright:
             self.playwright.stop()
-        self.browser = None
         self.context = None
 
     def is_verify_page(self, page: Page) -> bool:
@@ -203,9 +182,6 @@ class ContentCrawler:
 
     def parse_article_data(self, page: Page):
         """页面解析逻辑：提取落款、阅读量，自行补充选择器"""
-        # TODO: 根据实际情况修改选择器，例如：根据文章内容的HTML结构
-        # view_count = page.locator("#read-count").text_content()
-        # creator_info = page.locator(".author-info").text_content()
         # 获取页面全部纯文本
         full_text = page.evaluate("() => document.body.innerText")
         crop_text = full_text[-300:] # 取最后300个字符
@@ -297,7 +273,6 @@ class ContentCrawler:
                     logger.info(f"爬虫线程已被唤醒，验证结果: {verify_ok}")
 
                     # 验证后刷新会话缓存，并立刻把窗口重新隐藏
-                    self.save_context_to_memory()
                     page.wait_for_timeout(1500)
                     self._set_window_visible(False, page=page)
 
@@ -329,14 +304,14 @@ class ContentCrawler:
                         logger.warning(f"数据库中未找到 ID={article.id} 的文章，跳过写入")
 
                 # 每次成功解析后更新内存会话缓存
-                self.save_context_to_memory()
+                # self.save_context_to_memory()
 
 
             logger.info("全部文章爬取完成")
             self.signals.log_msg.emit("全部文章爬取完成")
             self.signals.task_over.emit(True)
 
-        except Exception as err:
+        except Exception as err: # pylint: disable=broad-exception-caught
             self.signals.log_msg.emit(f"爬取任务异常终止：{str(err)}")
             self.signals.task_over.emit(False)
         finally:

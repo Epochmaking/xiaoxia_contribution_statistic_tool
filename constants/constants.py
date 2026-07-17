@@ -1,5 +1,7 @@
 import os
+import tempfile
 import dotenv
+from pathlib import Path
 from mitmproxy.http import HTTPFlow
 
 dotenv.load_dotenv("config.ini")
@@ -23,6 +25,10 @@ ARTICLE_LIST_URL: str | None = None
 ARTICLE_LIST_URL_TEMPLATE: str = "https://mp.weixin.qq.com/mp/profile_ext?action=home&__biz={biz}#wechat_redirect"
 TEMPLATE_FLOW: HTTPFlow | None = None
 
+TEMP_PATH = Path(tempfile.gettempdir()) / "xiaoxia_contribution_statistic_tool"
+TEMP_CONTEXT_DIR = TEMP_PATH / "temp_context"
+TEMP_DB_PATH = TEMP_PATH / "temp_db.db"
+
 
 __all__ = [
     "LISTEN_PORT",
@@ -40,4 +46,7 @@ __all__ = [
     "LLM_BACKUP_MODEL",
     "LLM_FETCH_INTERVAL_S",
     "TEMPLATE_FLOW",
+    "TEMP_PATH",
+    "TEMP_CONTEXT_DIR",
+    "TEMP_DB_PATH",
 ]

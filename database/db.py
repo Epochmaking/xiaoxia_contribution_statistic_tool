@@ -1,8 +1,8 @@
-import tempfile
 from pathlib import Path
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
+from constants import TEMP_DB_PATH
 from models.base_model import Base
 
 from utils.logging import get_logger
@@ -16,8 +16,8 @@ def init_database():
     初始化数据库
     """
     global ENGINE # pylint: disable=global-statement
-    # db_path = Path(tempfile.gettempdir()) / 'xiaoxia_tool.db'
-    db_path = Path(__file__).parent.parent / 'xiaoxia_tool.db' # 测试路径
+    db_path = TEMP_DB_PATH
+    # db_path = Path(__file__).parent.parent / 'xiaoxia_tool.db' # 测试路径
     try:
         if db_path.exists():
             db_path.unlink()
