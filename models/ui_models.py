@@ -1,3 +1,4 @@
+import json
 from datetime import datetime
 
 from PySide6.QtGui import (
@@ -12,8 +13,10 @@ from models.article_models import Article
 from database.db import get_session
 
 from utils.logging import get_logger
+from utils.format import pretty_json
 
 logger = get_logger(__name__)
+
 
 class ArticleListViewModel(QStandardItemModel):
     """文章列表视图模型, 用于显示文章列表"""
@@ -47,6 +50,10 @@ class ArticleListViewModel(QStandardItemModel):
                     item.setData(article.get(key, ""), Qt.ItemDataRole.UserRole)
                     item.setData("点击访问", Qt.ItemDataRole.DisplayRole)
                     item.setTextAlignment(Qt.AlignmentFlag.AlignCenter)
+                elif key == "title":
+                    title = article.get(key, "")
+                    item.setText(f"《{title}》")
+                    item.setTextAlignment(Qt.AlignmentFlag.AlignLeft)
                 elif key == "publishing_time":
                     # 格式化发布时间：兼容字符串时间戳和 datetime 对象（从数据库读回时）
                     _pt = article.get(key)
@@ -59,7 +66,7 @@ class ArticleListViewModel(QStandardItemModel):
                             except (ValueError, TypeError):
                                 _dt = None
                         if _dt:
-                            item.setText(_dt.strftime("%Y-%m-%d %H:%M"))
+                            item.setText(_dt.strftime("%Y-%m-%d\n%H:%M"))
                 elif key == "author":
                     item.setText(str(article.get(key, "")))
                     item.setTextAlignment(Qt.AlignmentFlag.AlignCenter)
@@ -69,6 +76,16 @@ class ArticleListViewModel(QStandardItemModel):
                 elif key in ["view_count", "like_count", "heart_count", "share_count"]:
                     item.setText(str(article.get(key, "")))
                     item.setTextAlignment(Qt.AlignmentFlag.AlignRight)
+                elif key == "formatted_creators_list":
+                    formatted_creators_list = article.get(key, "")
+                    if formatted_creators_list:
+                        try:
+                            parsed = json.loads(formatted_creators_list)
+                            formatted_creators_list = pretty_json(parsed, indent=2)
+                        except json.JSONDecodeError:
+                            pass
+                    item.setText(formatted_creators_list)
+                    item.setTextAlignment(Qt.AlignmentFlag.AlignLeft)
                 else:
                     item.setText(str(article.get(key, "")))
                     item.setTextAlignment(Qt.AlignmentFlag.AlignLeft)

@@ -79,10 +79,10 @@ class GetArticleListThread(QThread):
                 time.sleep(0.5)
 
             # ========== 调试用 ==========
-            if False:
+            if True:
                 all_articles = [
                     {
-                        "title": "今天，厦大获中共中央表彰！",
+                        "title": "今天，厦大获中共中央表彰！12331413434",
                         "author": "厦门大学",
                         "publishing_time": "1782897820",
                         "content_url": "http://mp.weixin.qq.com/s?__biz=MzA3OTM1MTIzNQ==&amp;mid=2653264807&amp;idx=1&amp;sn=e4ce0b28f1ed01aa5e9634a79454b3fd&amp;chksm=85fc369d045317a55e5750e0727426eba5111f306142bfa15905b7fe34b17934ed136de0973c&amp;scene=27#wechat_redirect",
