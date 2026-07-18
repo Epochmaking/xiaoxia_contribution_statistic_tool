@@ -74,12 +74,25 @@ def parse_article(article: dict) -> dict:
     1. 解析文章，仅保留title、content_url，author, datetime字段
     """
     logger.info("parse article: %s", article)
+    title = article["app_msg_ext_info"]["title"]
+    content_url = article["app_msg_ext_info"]["content_url"]
+    publishing_time = str(article["comm_msg_info"]["datetime"])
+    _item_show_type = str(article["app_msg_ext_info"]["item_show_type"])
+    _type = article_type_mapping.get(_item_show_type, "未知类型")
+    author = article["app_msg_ext_info"]["author"]
+
+    if not author:
+        if _type == "小绿书":
+            author = "小绿书"
+        else:
+            author = "转载"
+
     new_dict = {
-        "title": article["app_msg_ext_info"]["title"],
-        "author": article["app_msg_ext_info"]["author"],
-        "publishing_time": str(article["comm_msg_info"]["datetime"]),
-        "content_url": article["app_msg_ext_info"]["content_url"],
-        "type": article_type_mapping.get(str(article["app_msg_ext_info"]["item_show_type"]), "未知类型"),
+        "title": title,
+        "author": author,
+        "publishing_time": publishing_time,
+        "content_url": content_url,
+        "type": _type,
     }
 
     return new_dict
@@ -132,11 +145,11 @@ def get_reader_stats(content_url: str, template_flow: HTTPFlow) -> dict:
             "appmsg_type": "9",
         }
 
-        logger.info("\ncookies:\n%s\nuser-Agent:\n%s\ndata:\n%s\n", cookies_str, user_agent, data)
+        logger.debug("\ncookies:\n%s\nuser-Agent:\n%s\ndata:\n%s\n", cookies_str, user_agent, data)
 
         stat = None
         resp = requests.post(api_url, headers=headers, data=data, timeout=10)
-        logger.info("get reader stats res: %s， status_code: %d", resp.text, resp.status_code)
+        logger.debug("get reader stats res: %s， status_code: %d", resp.text, resp.status_code)
         resp.raise_for_status()
         stat = resp.json()["appmsgstat"]
 
@@ -172,6 +185,8 @@ def persist_articles_to_db(article_list: list[dict]) -> None:
     try:
         with get_session() as session:
             for article in article_list:
+                if not article.get("type"):
+                    article["type"] = "图文"
                 article_in_db = Article(**article)
                 article_in_db.publishing_time = datetime.fromtimestamp(int(article["publishing_time"])) # type: ignore
                 session.add(article_in_db)

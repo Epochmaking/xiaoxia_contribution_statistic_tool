@@ -8,6 +8,8 @@ from PySide6.QtCore import QModelIndex, QPersistentModelIndex, Qt, QEvent
 from PySide6.QtWidgets import QStyledItemDelegate, QStyleOptionViewItem, QStyle
 
 from models.mapping import article_mapping
+from models.article_models import Article
+from database.db import get_session
 
 from utils.logging import get_logger
 
@@ -16,11 +18,21 @@ logger = get_logger(__name__)
 class ArticleListViewModel(QStandardItemModel):
     """文章列表视图模型, 用于显示文章列表"""
     # 定义固定的列顺序
-    COLUMN_ORDER = ["title", "author", "publishing_time", "type", "content_url"]
+    COLUMN_ORDER = [
+        "title", "author", "content_url", "publishing_time", "type", "creators_list",
+        "formatted_creators_list", "view_count", "like_count", "heart_count", "share_count"
+    ]
 
-    def __init__(self, article_list: list[dict], parent=None):
+    def __init__(self, article_list: list[dict] | None = None, parent=None):
+        if not article_list:
+            try:
+                article_list = self.get_article_list_from_db()
+            except Exception as e:
+                logger.error("从数据库获取文章列表失败: %s", e)
+                raise e
+
         self.row_count = len(article_list)
-        self.column_count = len(article_list[0])
+        self.column_count = len(self.COLUMN_ORDER)
         super().__init__(self.row_count, self.column_count, parent)
 
         self.setHorizontalHeaderLabels(
@@ -32,26 +44,33 @@ class ArticleListViewModel(QStandardItemModel):
                 item = QStandardItem()
                 if key == "content_url":
                     item.setForeground(QColor(121, 139, 163))
-                    item.setData(article[key], Qt.ItemDataRole.UserRole)
+                    item.setData(article.get(key, ""), Qt.ItemDataRole.UserRole)
                     item.setData("点击访问", Qt.ItemDataRole.DisplayRole)
                     item.setTextAlignment(Qt.AlignmentFlag.AlignCenter)
                 elif key == "publishing_time":
-                    # 格式化发布时间（字符串时间戳转换为datetime）
-                    item.setText(datetime.fromtimestamp(int(article[key])).strftime("%Y-%m-%d %H:%M"))
+                    # 格式化发布时间：兼容字符串时间戳和 datetime 对象（从数据库读回时）
+                    _pt = article.get(key)
+                    if _pt:
+                        if isinstance(_pt, datetime):
+                            _dt = _pt
+                        else:
+                            try:
+                                _dt = datetime.fromtimestamp(int(_pt))
+                            except (ValueError, TypeError):
+                                _dt = None
+                        if _dt:
+                            item.setText(_dt.strftime("%Y-%m-%d %H:%M"))
                 elif key == "author":
-                    if article[key]:
-                        author = article[key]
-                    elif article[key] == "" and article["type"] == "小绿书":
-                        author = "小绿书"
-                    else:
-                        author = "转载"
-                    item.setText(author)
+                    item.setText(str(article.get(key, "")))
                     item.setTextAlignment(Qt.AlignmentFlag.AlignCenter)
                 elif key == "type":
-                    item.setText(article[key])
+                    item.setText(str(article.get(key, "")))
                     item.setTextAlignment(Qt.AlignmentFlag.AlignCenter)
+                elif key in ["view_count", "like_count", "heart_count", "share_count"]:
+                    item.setText(str(article.get(key, "")))
+                    item.setTextAlignment(Qt.AlignmentFlag.AlignRight)
                 else:
-                    item.setText(article[key])
+                    item.setText(str(article.get(key, "")))
                     item.setTextAlignment(Qt.AlignmentFlag.AlignLeft)
 
                 cell_font = QFont()
@@ -61,6 +80,13 @@ class ArticleListViewModel(QStandardItemModel):
                 self.setItem(row, col, item)
 
         logger.info("文章列表视图模型初始化完成, 总行数: %d, 总列数: %d", self.row_count, self.column_count)
+
+    def get_article_list_from_db(self) -> list[dict]:
+        """从数据库获取文章列表"""
+        with get_session() as session:
+            articles = session.query(Article).all()
+            article_list = [article.to_dict() for article in articles]
+            return article_list
 
 class HyperlinkDelegate(QStyledItemDelegate):
     """链接委托类"""
@@ -72,14 +98,6 @@ class HyperlinkDelegate(QStyledItemDelegate):
         option = QStyleOptionViewItem(option)
         self.initStyleOption(option, index)
         painter.save()
-        # ========== 使用表头单元格标准边距 ==========
-        # if option.widget:
-        #     style = option.widget.style()
-        #     # QTableView单元格统一标准左右内边距
-        #     margin = style.pixelMetric(QStyle.PixelMetric.PM_HeaderGripMargin, None, option.widget)
-        # else:
-        #     margin = 5  # 无控件时兜底默认值
-
         margin = 5  # 无控件时兜底默认值
 
         # 文字绘制矩形，和原生单元格偏移量完全一致

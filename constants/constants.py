@@ -1,7 +1,7 @@
 import os
 import tempfile
-import dotenv
 from pathlib import Path
+import dotenv
 from mitmproxy.http import HTTPFlow
 
 dotenv.load_dotenv("config.ini")

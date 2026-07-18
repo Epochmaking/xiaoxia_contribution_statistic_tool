@@ -30,7 +30,7 @@ class MainWindow(QWidget, Ui_MainForm):
         self.minimize_win_btn.clicked.connect(self.minimize_win_btn_on_click)
         self.step_one_btn_connection = self.step_one_btn.clicked.connect(self.step_one_btn_on_click)
         self.step_two_btn_connection = self.step_two_btn.clicked.connect(self.step_two_btn_on_click)
-        self.step_three_btn_connection = self.step_three_btn.clicked.connect(self.step_three_btn_on_click)
+        # self.step_three_btn_connection = self.step_three_btn.clicked.connect(self.step_three_btn_on_click)
         self.reget_biz_btn_connection = self.reget_biz_btn.clicked.connect(self.reget_biz_btn_on_click)
 
         # 初始化显示已获取的BIZ
@@ -60,7 +60,32 @@ class MainWindow(QWidget, Ui_MainForm):
 
         # 注册变量
         self.article_list = []
-        
+
+        # 注册弹窗
+        self.index_status_msg_box = QMessageBox()
+        self.index_status_msg_box.setWindowTitle("置顶提示")
+
+    # 汇报文章索引事件
+    def on_report_index(self, index: int): 
+        """汇报文章索引事件"""
+        self.index_status_msg_box.setText(
+            f"捕获到公众号接口\n开始获取文章列表索引，请耐心等待...\n已获取{index}篇文章"
+        )
+
+    def on_flow_got(self, got: bool):
+        """获取到公众号接口事件"""
+        if got:
+            self.index_status_msg_box.setText(
+                "捕获到公众号接口\n开始获取文章列表索引，请耐心等待...\n已获取0篇文章"
+            )
+            self.index_status_msg_box.setStandardButtons(QMessageBox.StandardButton.NoButton)
+            self.index_status_msg_box.setWindowFlags(
+                self.index_status_msg_box.windowFlags() | Qt.WindowType.WindowStaysOnTopHint
+            )
+            self.index_status_msg_box.show()
+        else:
+            self.index_status_msg_box.setText("未获取到文章索引")
+            self.index_status_msg_box.setStandardButtons(QMessageBox.StandardButton.Ok)
 
     # 步骤一任务完成
     def get_mp_biz_task_over(self, biz_result: str):
@@ -107,42 +132,56 @@ class MainWindow(QWidget, Ui_MainForm):
 
         self.step_start = False
 
+        self.step_two_btn.disconnect(self.step_two_btn_connection)
+
         if len(all_articles) == 0:
             msg_box = QMessageBox()
             msg_box.setWindowTitle("置顶提示")
-            msg_box.setText("获取失败，请检查网络连接或稍后再试")
+            msg_box.setText("终止获取")
             msg_box.setWindowFlags(msg_box.windowFlags() | Qt.WindowType.WindowStaysOnTopHint)
             msg_box.exec()
 
             # 绑定按钮为开始获取按钮
             self.step_two_btn.setText("开始获取")
-            self.step_two_btn.disconnect(self.step_two_btn_connection)
             self.step_two_btn_connection = self.step_two_btn.clicked.connect(self.step_two_btn_on_click)
             return
 
         # 写入变量
         self.article_list = all_articles
 
-        # 绑定按钮为下一步按钮
-        self.step_two_btn.disconnect(self.step_two_btn_connection)
+        # 提示获取到的文章数量
+        logger.info("获取到的文章索引: %d", len(all_articles))
+        self.index_status_msg_box.setText(f"已获取到的文章索引: 共{len(all_articles)}条。\n单击OK开始分析文章信息。")
+        self.index_status_msg_box.setStandardButtons(QMessageBox.StandardButton.Ok | QMessageBox.StandardButton.Cancel)
+        ret = self.index_status_msg_box.exec()
+        if ret == QMessageBox.StandardButton.Cancel:
+            self.step_two_btn.setText("开始获取")
+            self.step_two_btn_connection = self.step_two_btn.clicked.connect(self.step_two_btn_on_click)
+            return
+
+        # 进入下一步
         self.go_to_next_step()
-
-        # 弹窗提示获取到的文章数量
-        logger.info("获取到的文章数量: %d", len(all_articles))
-
-        set_article_confirm_table(self.article_confirm_table, all_articles)
+        self.start_article_content_crawl()
 
     def get_article_content_thread_article_list_persist_ok(self):
         """分析线程文章列表写入数据库完成"""
         logger.info("分析线程文章列表写入数据库完成")
+
+    def get_article_content_thread_task_over(self, ok: bool):
+        """文章信息获取完成"""
         msg_box = QMessageBox()
         msg_box.setWindowTitle("置顶提示")
-        msg_box.setText("分析线程文章列表写入数据库完成")
-        msg_box.setWindowFlags(msg_box.windowFlags() | Qt.WindowType.WindowStaysOnTopHint)
-        msg_box.show()
-        self.step_three_btn.setText("结束")
-        self.step_start = False
-        self.step_three_btn.disconnect(self.step_three_btn_connection)
+        if ok:
+            set_article_confirm_table(self.article_confirm_table)
+            self.go_to_next_step()
+            msg_box.setText("文章信息获取成功，请返回软件查看文章列表")
+            msg_box.setWindowFlags(msg_box.windowFlags() | Qt.WindowType.WindowStaysOnTopHint)
+            msg_box.exec()
+        else:
+            msg_box.setText("文章信息获取失败")
+            msg_box.setWindowFlags(msg_box.windowFlags() | Qt.WindowType.WindowStaysOnTopHint)
+            msg_box.exec()
+            return
 
     def need_verify(self):
         """需要验证：用户点击确认后回传信号给爬虫线程"""
@@ -226,7 +265,7 @@ class MainWindow(QWidget, Ui_MainForm):
             self.article_list_url.setText(consts.ARTICLE_LIST_URL)
             self.article_list_url.setSelection(0, len(self.article_list_url.text()))
         if next_index == 2:
-            # 步骤三：提供文章列表
+            # 步骤三：文章列表加载状态
             pass
 
     def step_one_btn_on_click(self):
@@ -257,6 +296,8 @@ class MainWindow(QWidget, Ui_MainForm):
 
             self.get_article_list_thread = GetArticleListThread()
             self.get_article_list_thread.task_over.connect(self.get_article_list_task_over)
+            self.get_article_list_thread.flow_got.connect(self.on_flow_got)
+            self.get_article_list_thread.report_index.connect(self.on_report_index)
 
             time_epoch = self.date_edit.dateTime().toSecsSinceEpoch()
             self.get_article_list_thread.target_time = (
@@ -272,28 +313,27 @@ class MainWindow(QWidget, Ui_MainForm):
                 self.get_article_list_thread.task_over.disconnect()
                 self.get_article_list_thread = None
 
-    def step_three_btn_on_click(self):
-        """步骤三按钮点击事件"""
+    def start_article_content_crawl(self):
+        """开始获取文章内容信息"""
         if not self.step_start:
             self.step_start = True
-            self.step_three_btn.setText("停止分析")
             logger.info("开始分析文章数据")
 
             self.get_article_content_thread = GetArticleContentThread(self.article_list, self.to_calc_fee.isChecked())
             self.get_article_content_thread.article_list_persist_ok.connect(self.get_article_content_thread_article_list_persist_ok)
             self.get_article_content_thread.need_user_verify.connect(self.need_verify) # 连接人机验证信号（线程一启动后，crawler创建即转发到此信号）
+            self.get_article_content_thread.task_over.connect(self.get_article_content_thread_task_over) # 连接任务完成信号
 
             try:
                 self.get_article_content_thread.start()
             except GetArticleContentError as e:
                 logger.error("分析失败: %s", e)
+                self.step_start = False
                 if self.get_article_content_thread is not None:
                     self.get_article_content_thread.stop()
-        else:
-            self.step_start = False
-            self.step_three_btn.setText("开始分析")
-            logger.info("停止分析文章数据")
-            if self.get_article_content_thread is not None:
-                self.get_article_content_thread.stop()
-                self.get_article_content_thread.article_list_persist_ok.disconnect()
-                self.get_article_content_thread = None
+                    self.get_article_content_thread = None
+                msg_box = QMessageBox()
+                msg_box.setWindowTitle("置顶提示")
+                msg_box.setText(f"分析失败: {e}")
+                msg_box.setWindowFlags(msg_box.windowFlags() | Qt.WindowType.WindowStaysOnTopHint)
+                msg_box.exec()

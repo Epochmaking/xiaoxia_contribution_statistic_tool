@@ -1,13 +1,14 @@
 from PySide6.QtWidgets import QTableView
 from models.ui_models import ArticleListViewModel, HyperlinkDelegate
 
-def set_article_confirm_table(article_confirm_table: QTableView, all_articles: list[dict]):
+def set_article_confirm_table(article_confirm_table: QTableView, all_articles: list[dict] | None = None):
     """设置文章确认表格"""
     # 设置表格模型
-    article_confirm_table.setModel(ArticleListViewModel(all_articles))
+    article_list_view = ArticleListViewModel(all_articles)
+    article_confirm_table.setModel(article_list_view)
 
     # 设置超链接委托
-    article_confirm_table.setItemDelegateForColumn(4, HyperlinkDelegate())
+    article_confirm_table.setItemDelegateForColumn(article_list_view.COLUMN_ORDER.index("content_url"), HyperlinkDelegate())
 
     # 设置表格样式
     article_confirm_table.setStyleSheet("""

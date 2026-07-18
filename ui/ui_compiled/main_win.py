@@ -17,9 +17,9 @@ from PySide6.QtGui import (QBrush, QColor, QConicalGradient, QCursor,
     QPalette, QPixmap, QRadialGradient, QTransform)
 from PySide6.QtWidgets import (QAbstractSpinBox, QApplication, QCheckBox, QDateEdit,
     QDateTimeEdit, QFrame, QHBoxLayout, QHeaderView,
-    QLabel, QLayout, QPushButton, QSizePolicy,
-    QSpacerItem, QStackedWidget, QTableView, QTextBrowser,
-    QVBoxLayout, QWidget)
+    QLabel, QLayout, QProgressBar, QPushButton,
+    QSizePolicy, QSpacerItem, QStackedWidget, QTableView,
+    QTextBrowser, QVBoxLayout, QWidget)
 from . import ui_res_rc
 
 class Ui_MainForm(object):
@@ -563,20 +563,68 @@ class Ui_MainForm(object):
         self.stackedWidget.addWidget(self.page_2)
         self.page_3 = QWidget()
         self.page_3.setObjectName(u"page_3")
-        self.verticalLayout_5 = QVBoxLayout(self.page_3)
+        self.verticalLayout_9 = QVBoxLayout(self.page_3)
+        self.verticalLayout_9.setObjectName(u"verticalLayout_9")
+        self.label_6 = QLabel(self.page_3)
+        self.label_6.setObjectName(u"label_6")
+        self.label_6.setTextFormat(Qt.TextFormat.MarkdownText)
+
+        self.verticalLayout_9.addWidget(self.label_6)
+
+        self.label_7 = QLabel(self.page_3)
+        self.label_7.setObjectName(u"label_7")
+        self.label_7.setMaximumSize(QSize(16777215, 25))
+        self.label_7.setFont(font5)
+        self.label_7.setStyleSheet(u"color: rgb(255, 255, 255)")
+
+        self.verticalLayout_9.addWidget(self.label_7)
+
+        self.progressBar = QProgressBar(self.page_3)
+        self.progressBar.setObjectName(u"progressBar")
+        self.progressBar.setMaximumSize(QSize(16777215, 12))
+        self.progressBar.setStyleSheet(u"QProgressBar {\n"
+"    /* \u6574\u4f53\u8fdb\u5ea6\u6761\u80cc\u666f\uff08\u672a\u586b\u5145\u533a\u57df\uff09 */\n"
+"    background-color: #cccccc;\n"
+"    border-radius: 4px;    /* \u5706\u89d2 */\n"
+"    height: 6px;          /* \u8fdb\u5ea6\u6761\u9ad8\u5ea6 */\n"
+"    text-align: right;    /* \u6587\u5b57\u5c45\u4e2d */\n"
+"}\n"
+"\n"
+"/* \u8fdb\u5ea6\u586b\u5145\u533a\u57df */\n"
+"QProgressBar::chunk {\n"
+"    background-color: rgb(6, 173, 86);\n"
+"    border-radius: 4px;\n"
+"}\n"
+"\n"
+"/* \u8fdb\u5ea6\u6587\u5b57\u989c\u8272 */\n"
+"QProgressBar::text {\n"
+"    color: #ffffff;\n"
+"    font-size: 8px;\n"
+"}")
+        self.progressBar.setValue(24)
+        self.progressBar.setTextVisible(True)
+        self.progressBar.setInvertedAppearance(False)
+        self.progressBar.setTextDirection(QProgressBar.Direction.TopToBottom)
+
+        self.verticalLayout_9.addWidget(self.progressBar)
+
+        self.stackedWidget.addWidget(self.page_3)
+        self.page_4 = QWidget()
+        self.page_4.setObjectName(u"page_4")
+        self.verticalLayout_5 = QVBoxLayout(self.page_4)
         self.verticalLayout_5.setObjectName(u"verticalLayout_5")
-        self.label_3 = QLabel(self.page_3)
+        self.label_3 = QLabel(self.page_4)
         self.label_3.setObjectName(u"label_3")
         self.label_3.setTextFormat(Qt.TextFormat.MarkdownText)
 
         self.verticalLayout_5.addWidget(self.label_3)
 
-        self.article_confirm_table = QTableView(self.page_3)
+        self.article_confirm_table = QTableView(self.page_4)
         self.article_confirm_table.setObjectName(u"article_confirm_table")
 
         self.verticalLayout_5.addWidget(self.article_confirm_table)
 
-        self.btn_container_3 = QWidget(self.page_3)
+        self.btn_container_3 = QWidget(self.page_4)
         self.btn_container_3.setObjectName(u"btn_container_3")
         self.btn_container_3.setStyleSheet(u"QPushButton {\n"
 "	background: rgb(6, 173, 86);\n"
@@ -602,7 +650,7 @@ class Ui_MainForm(object):
 
         self.verticalLayout_5.addWidget(self.btn_container_3)
 
-        self.stackedWidget.addWidget(self.page_3)
+        self.stackedWidget.addWidget(self.page_4)
 
         self.verticalLayout_2.addWidget(self.stackedWidget)
 
@@ -615,7 +663,7 @@ class Ui_MainForm(object):
 
         self.retranslateUi(MainForm)
 
-        self.stackedWidget.setCurrentIndex(1)
+        self.stackedWidget.setCurrentIndex(2)
 
 
         QMetaObject.connectSlotsByName(MainForm)
@@ -661,6 +709,9 @@ class Ui_MainForm(object):
         self.label_2.setText(QCoreApplication.translate("MainForm", u"3. \u8bf7\u7528\u9f20\u6807\u53f3\u952e\u4ee5\u4e0b\u94fe\u63a5\u590d\u5236\u5e76\u7c98\u8d34\u5230\u5fae\u4fe1\u804a\u5929\u6253\u5f00\uff1a", None))
         self.article_list_url.setText(QCoreApplication.translate("MainForm", u"[URL_HOLDER]", None))
         self.step_two_btn.setText(QCoreApplication.translate("MainForm", u"\u5f00\u59cb\u83b7\u53d6", None))
+        self.label_6.setText(QCoreApplication.translate("MainForm", u"<html><head/><body><p align=\"center\"><span style=\" font-size:26pt; font-weight:700; color:#ffffff;\">\u6b63\u5728\u63d0\u53d6\u6587\u7ae0\u6570\u636e\u4e2d\uff0c\u8bf7\u8010\u5fc3\u7b49\u5f85...</span></p></body></html>", None))
+        self.label_7.setText(QCoreApplication.translate("MainForm", u"TextLabel", None))
+        self.progressBar.setFormat(QCoreApplication.translate("MainForm", u"%p% ", None))
         self.label_3.setText(QCoreApplication.translate("MainForm", u"<html><head/><body><p align=\"center\"><span style=\" font-size:26pt; font-weight:700; color:#ffffff;\">\u7b2c\u4e09\u6b65 \u786e\u8ba4\u6587\u7ae0\u5217\u8868</span></p></body></html>", None))
         self.step_three_btn.setText(QCoreApplication.translate("MainForm", u"\u6211\u5df2\u786e\u8ba4", None))
     # retranslateUi

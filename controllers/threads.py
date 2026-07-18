@@ -55,6 +55,7 @@ class GetArticleListThread(QThread):
     """获取文章列表接口"""
     task_over = Signal(list)
     flow_got = Signal(bool)
+    report_index = Signal(int)
 
     def __init__(self):
         super().__init__()
@@ -78,7 +79,7 @@ class GetArticleListThread(QThread):
                 time.sleep(0.5)
 
             # ========== 调试用 ==========
-            if True:
+            if False:
                 all_articles = [
                     {
                         "title": "今天，厦大获中共中央表彰！",
@@ -96,10 +97,10 @@ class GetArticleListThread(QThread):
                     },
                     {
                         "title": "囊萤星火燃夏夜，厦大青年正当时✨",
-                        "author": "",
+                        "author": "小绿书",
                         "publishing_time": "1783425868",
                         "content_url": "https://mp.weixin.qq.com/s?__biz=MzA3OTM1MTIzNQ==&amp;mid=2653265026&amp;idx=1&amp;sn=5a9ef44ff50da61fa33947793e303759&amp;chksm=85c47c7e4b0b2a4534ff2481d3ba521f5cc8fcdb22ac44e682afb6cda86dae7fab49c0991b7a&amp;scene=27#wechat_redirect",
-                        "type": "图文",
+                        "type": "小绿书",
                     },
                 ]
                 time.sleep(3)
@@ -144,6 +145,7 @@ class GetArticleListThread(QThread):
                 )
 
                 all_articles.extend(articles)
+                self.report_index.emit(len(all_articles))
 
                 logger.info("本轮获取到文章: %s", articles)
 
@@ -165,6 +167,7 @@ class GetArticleContentThread(QThread):
     """
     article_list_persist_ok = Signal()
     need_user_verify = Signal()      # 转发 ContentCrawler.need_user_verify
+    task_over = Signal(bool)
     def __init__(self, article_list: list[dict], to_calc_fee: bool):
         super().__init__()
         # self.to_stop = False # 停止thread标志
@@ -183,6 +186,8 @@ class GetArticleContentThread(QThread):
             self.crawler = ContentCrawler()
             # 转发爬虫的 need_user_verify 信号到线程自身，GUI 层连接线程信号即可
             self.crawler.signals.need_user_verify.connect(self.need_user_verify.emit)
+            self.crawler.signals.task_over.connect(self.task_over.emit)
+
             # 同时把日志也转发出来（供未来扩展）
             #self.crawler.signals.log_msg.connect(lambda s: logger.info(s))
             self.crawler.crawl_all_articles(self.to_calc_fee)

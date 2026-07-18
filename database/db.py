@@ -1,4 +1,3 @@
-from pathlib import Path
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
@@ -42,4 +41,3 @@ def get_session():
         init_database()
     session_local = sessionmaker(autocommit=False, autoflush=False, bind=ENGINE)
     return session_local()
-

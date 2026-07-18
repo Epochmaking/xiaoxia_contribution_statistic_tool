@@ -17,6 +17,7 @@ class MpBizResponseHandler:
     """mp biz响应处理类"""
     def __init__(self):
         self.biz_result: str | None = None
+        self.template_flow: http.HTTPFlow | None = None
     def __str__(self):
         return "MpBizResponseHandler"
     def response(self, flow: http.HTTPFlow):
@@ -110,7 +111,7 @@ class Crawler:
         self._thread = Thread(target=self._run_loop, daemon=True)
         self._thread.start()
         self._ready_event.wait(timeout=5)  # 阻塞到初始化完成
-        logger.info("start crawler, handler: %s", self.response_handler)
+        logger.debug("start crawler, handler: %s", self.response_handler)
 
     def stop(self):
         """安全停止 master + 事件循环""" 
@@ -175,7 +176,7 @@ class ArticleListCrawler(Crawler):
     async def _replay_and_wait(self, new_flow: http.HTTPFlow, timeout_s: float = 10.0) -> http.HTTPFlow | None:
         assert self.master is not None
         # 执行客户端重放（主动发请求到服务器）
-        logger.info("replay flow: %s", new_flow)
+        logger.debug("replay flow: %s", new_flow)
         self.master.commands.call("replay.client", [new_flow])
         # 等待 response 被填充，带超时保护
         interval = 0.1

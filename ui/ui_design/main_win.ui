@@ -637,7 +637,7 @@ QPushButton:hover {
             <string notr="true"/>
            </property>
            <property name="currentIndex">
-            <number>1</number>
+            <number>2</number>
            </property>
            <widget class="QWidget" name="page_1">
             <property name="autoFillBackground">
@@ -1385,6 +1385,87 @@ QPushButton:hover {
             </layout>
            </widget>
            <widget class="QWidget" name="page_3">
+            <layout class="QVBoxLayout" name="verticalLayout_9">
+             <item>
+              <widget class="QLabel" name="label_6">
+               <property name="text">
+                <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p align=&quot;center&quot;&gt;&lt;span style=&quot; font-size:26pt; font-weight:700; color:#ffffff;&quot;&gt;正在提取文章数据中，请耐心等待...&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+               </property>
+               <property name="textFormat">
+                <enum>Qt::TextFormat::MarkdownText</enum>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QLabel" name="label_7">
+               <property name="maximumSize">
+                <size>
+                 <width>16777215</width>
+                 <height>25</height>
+                </size>
+               </property>
+               <property name="font">
+                <font>
+                 <pointsize>12</pointsize>
+                </font>
+               </property>
+               <property name="styleSheet">
+                <string notr="true">color: rgb(255, 255, 255)</string>
+               </property>
+               <property name="text">
+                <string>TextLabel</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QProgressBar" name="progressBar">
+               <property name="maximumSize">
+                <size>
+                 <width>16777215</width>
+                 <height>12</height>
+                </size>
+               </property>
+               <property name="styleSheet">
+                <string notr="true">QProgressBar {
+    /* 整体进度条背景（未填充区域） */
+    background-color: #cccccc;
+    border-radius: 4px;    /* 圆角 */
+    height: 6px;          /* 进度条高度 */
+    text-align: right;    /* 文字居中 */
+}
+
+/* 进度填充区域 */
+QProgressBar::chunk {
+    background-color: rgb(6, 173, 86);
+    border-radius: 4px;
+}
+
+/* 进度文字颜色 */
+QProgressBar::text {
+    color: #ffffff;
+    font-size: 8px;
+}</string>
+               </property>
+               <property name="value">
+                <number>24</number>
+               </property>
+               <property name="textVisible">
+                <bool>true</bool>
+               </property>
+               <property name="invertedAppearance">
+                <bool>false</bool>
+               </property>
+               <property name="textDirection">
+                <enum>QProgressBar::Direction::TopToBottom</enum>
+               </property>
+               <property name="format">
+                <string>%p% </string>
+               </property>
+              </widget>
+             </item>
+            </layout>
+           </widget>
+           <widget class="QWidget" name="page_4">
             <layout class="QVBoxLayout" name="verticalLayout_5">
              <item>
               <widget class="QLabel" name="label_3">
