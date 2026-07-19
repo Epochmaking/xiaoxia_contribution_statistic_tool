@@ -1,10 +1,13 @@
+import os 
 from datetime import datetime
-from PySide6.QtWidgets import QWidget, QMessageBox
+from pathlib import Path
+from PySide6.QtWidgets import QWidget, QMessageBox, QFileDialog
 from PySide6.QtCore import Qt, QDate
 
 from ui.ui_compiled.main_win import Ui_MainForm
 from ui.ui_helper import set_article_confirm_table
 from controllers.threads import GetMpBizThread, GetArticleListThread, GetArticleContentThread
+from controllers.export import export_to_file
 from helpers.config_helper import write_config, del_config
 from exceptions import GetArticleContentError
 
@@ -30,7 +33,7 @@ class MainWindow(QWidget, Ui_MainForm):
         self.minimize_win_btn.clicked.connect(self.minimize_win_btn_on_click)
         self.step_one_btn_connection = self.step_one_btn.clicked.connect(self.step_one_btn_on_click)
         self.step_two_btn_connection = self.step_two_btn.clicked.connect(self.step_two_btn_on_click)
-        # self.step_three_btn_connection = self.step_three_btn.clicked.connect(self.step_three_btn_on_click)
+        self.export_file_btn_connection = self.export_file_btn.clicked.connect(self.export_file_btn_on_click)
         self.reget_biz_btn_connection = self.reget_biz_btn.clicked.connect(self.reget_biz_btn_on_click)
 
         # 初始化显示已获取的BIZ
@@ -63,7 +66,9 @@ class MainWindow(QWidget, Ui_MainForm):
 
         # 注册弹窗
         self.index_status_msg_box = QMessageBox()
-        self.index_status_msg_box.setWindowTitle("置顶提示")
+        self.index_status_msg_box.setWindowTitle("推送统计工具提示")
+        self.get_biz_msg_box = QMessageBox()
+        self.get_biz_msg_box.setWindowTitle("推送统计工具提示")
 
     # 汇报文章索引事件
     def on_report_index(self, index: int): 
@@ -102,11 +107,9 @@ class MainWindow(QWidget, Ui_MainForm):
 
         # 弹窗提示获取到的微信公众号BIZ
         logger.info("获取到微信公众号BIZ: %s", biz_result)
-        msg_box = QMessageBox()
-        msg_box.setWindowTitle("置顶提示")
-        msg_box.setText(f"获取到的微信公众号BIZ: {biz_result}")
-        msg_box.setWindowFlags(msg_box.windowFlags() | Qt.WindowType.WindowStaysOnTopHint)
-        msg_box.exec()
+        self.get_biz_msg_box.setText(f"已获取到微信公众号BIZ: {biz_result}\n返回本软件进行下一步")
+        self.get_biz_msg_box.setWindowFlags(self.get_biz_msg_box.windowFlags() | Qt.WindowType.WindowStaysOnTopHint)
+        self.get_biz_msg_box.setStandardButtons(QMessageBox.StandardButton.Ok)
 
         # 写入至配置文件并更新到“已获取biz”当中
         write_config({"mp_id": biz_result})
@@ -136,7 +139,7 @@ class MainWindow(QWidget, Ui_MainForm):
 
         if len(all_articles) == 0:
             msg_box = QMessageBox()
-            msg_box.setWindowTitle("置顶提示")
+            msg_box.setWindowTitle("推送统计工具提示")
             msg_box.setText("终止获取")
             msg_box.setWindowFlags(msg_box.windowFlags() | Qt.WindowType.WindowStaysOnTopHint)
             msg_box.exec()
@@ -170,9 +173,9 @@ class MainWindow(QWidget, Ui_MainForm):
     def get_article_content_thread_task_over(self, ok: bool):
         """文章信息获取完成"""
         msg_box = QMessageBox()
-        msg_box.setWindowTitle("置顶提示")
+        msg_box.setWindowTitle("推送统计工具提示")
         if ok:
-            set_article_confirm_table(self.article_confirm_table)
+            set_article_confirm_table(self.article_confirm_table, to_calc_fee=self.to_calc_fee.isChecked())
             self.go_to_next_step()
             msg_box.setText("文章信息获取成功，请返回软件查看文章列表")
             msg_box.setWindowFlags(msg_box.windowFlags() | Qt.WindowType.WindowStaysOnTopHint)
@@ -187,14 +190,14 @@ class MainWindow(QWidget, Ui_MainForm):
         """需要验证：用户点击确认后回传信号给爬虫线程"""
         logger.info("需要验证 - 弹出提示等待用户完成浏览器验证后点击确认")
         msg_box = QMessageBox()
-        msg_box.setWindowTitle("置顶提示")
+        msg_box.setWindowTitle("推送统计工具提示")
         msg_box.setText("请在弹出的浏览器窗口中完成人机验证，完成后请点击【确认】以继续爬取。")
         msg_box.setStandardButtons(QMessageBox.StandardButton.Ok | QMessageBox.StandardButton.Cancel)
         msg_box.setWindowFlags(msg_box.windowFlags() | Qt.WindowType.WindowStaysOnTopHint)
         ret = msg_box.exec()
 
         # 关键：回传信号给爬虫，告诉它"用户已操作，可继续"
-        ok = (ret == QMessageBox.StandardButton.Ok)
+        ok = ret == QMessageBox.StandardButton.Ok
         if (
             self.get_article_content_thread is not None
             and self.get_article_content_thread.crawler is not None
@@ -274,6 +277,11 @@ class MainWindow(QWidget, Ui_MainForm):
             self.step_start = True
             self.step_one_btn.setText("停止获取")
             logger.info("开始获取微信公众号BIZ")
+            self.get_biz_msg_box.setText("获取微信公众号BIZ中...\n大概需要三十秒，请耐心等待")
+            self.get_biz_msg_box.setWindowFlags(self.get_biz_msg_box.windowFlags() | Qt.WindowType.WindowStaysOnTopHint)
+            self.get_biz_msg_box.setStandardButtons(QMessageBox.StandardButton.NoButton)
+            self.get_biz_msg_box.show()
+
             self.get_mp_biz_thread = GetMpBizThread()
             self.get_mp_biz_thread.task_over.connect(self.get_mp_biz_task_over)
             self.get_mp_biz_thread.start()
@@ -320,7 +328,9 @@ class MainWindow(QWidget, Ui_MainForm):
             logger.info("开始分析文章数据")
 
             self.get_article_content_thread = GetArticleContentThread(self.article_list, self.to_calc_fee.isChecked())
-            self.get_article_content_thread.article_list_persist_ok.connect(self.get_article_content_thread_article_list_persist_ok)
+            self.get_article_content_thread.article_list_persist_ok.connect(
+                self.get_article_content_thread_article_list_persist_ok
+            )
             self.get_article_content_thread.need_user_verify.connect(self.need_verify) # 连接人机验证信号（线程一启动后，crawler创建即转发到此信号）
             self.get_article_content_thread.task_over.connect(self.get_article_content_thread_task_over) # 连接任务完成信号
 
@@ -333,7 +343,29 @@ class MainWindow(QWidget, Ui_MainForm):
                     self.get_article_content_thread.stop()
                     self.get_article_content_thread = None
                 msg_box = QMessageBox()
-                msg_box.setWindowTitle("置顶提示")
+                msg_box.setWindowTitle("推送统计工具提示")
                 msg_box.setText(f"分析失败: {e}")
                 msg_box.setWindowFlags(msg_box.windowFlags() | Qt.WindowType.WindowStaysOnTopHint)
                 msg_box.exec()
+
+    def export_file_btn_on_click(self):
+        """导出文件按钮点击事件"""
+        logger.info("导出文件")
+        if self.to_calc_fee.isChecked():
+            # 先计算稿费
+            ...
+
+        # 弹出文件夹选择器
+        folder_str = QFileDialog.getExistingDirectory(self, "选择导出文件夹")
+        if not folder_str:
+            return
+        folder_path = Path(folder_str)
+        export_to_file(folder_path, to_calc_fee=self.to_calc_fee.isChecked())
+        msg_box = QMessageBox()
+        msg_box.setWindowTitle("导出提示")
+        msg_box.setText("导出完成")
+        msg_box.setWindowFlags(msg_box.windowFlags() | Qt.WindowType.WindowStaysOnTopHint)
+        msg_box.exec()
+
+        # 打开文件夹
+        os.startfile(folder_path)

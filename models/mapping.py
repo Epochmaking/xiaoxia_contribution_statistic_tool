@@ -4,12 +4,13 @@ article_mapping = {
     "publishing_time": "发布时间",
     "author": "原创声明",
     "type": "类型",
-    "creators_list": "完整落款",
-    "formatted_creators_list": "格式化落款",
+    "creators_list": "参与人员",
+    "formatted_creators_list": "格式化参与人员",
     "view_count": "阅读量",
-    "like_count": "在看量",
-    "heart_count": "爱心量",
-    "share_count": "分享量",
+    "like_count": "点赞数",
+    "heart_count": "爱心数",
+    "share_count": "分享数",
+    "comment_count": "评论数",
 }
 
 article_type_mapping = {

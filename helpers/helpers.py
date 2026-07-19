@@ -159,12 +159,15 @@ def get_reader_stats(content_url: str, template_flow: HTTPFlow) -> dict:
                 "view_count": 0,
                 "like_count": 0,
                 "old_like_count": 0,
+                "share_num": 0,
+                "comment_count": 0,
             }
 
         view_count = stat["read_num"] or 0
         like_count = stat["like_num"] or 0
         old_like_count = stat["old_like_num"] or 0
         share_num = stat["share_num"] or 0
+        comment_count = stat["prompted"] or 0
 
 
         return {
@@ -172,8 +175,9 @@ def get_reader_stats(content_url: str, template_flow: HTTPFlow) -> dict:
             "heart_count": like_count, # 爱心量
             "like_count": old_like_count, # 在看量
             "share_count": share_num, # 分享量
+            "comment_count": comment_count, # 评论量
         }
-    except Exception as e:
+    except Exception as e: # pylint: disable=broad-exception-caught
         logger.warning("get reader stats failed: %s", e)
         return {}
 
@@ -196,3 +200,10 @@ def persist_articles_to_db(article_list: list[dict]) -> None:
         raise e
 
     logger.info(f"{len(article_list)} 篇文章已持久化到数据库")
+
+def get_article_list_from_db() -> list[dict]:
+    """从数据库获取文章列表"""
+    with get_session() as session:
+        articles = session.query(Article).all()
+        article_list = [article.to_dict() for article in articles]
+        return article_list

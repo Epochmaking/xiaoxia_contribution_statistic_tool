@@ -47,7 +47,12 @@ def llm_request(system_prompt: str, user_prompt: str, temperature: float = 0.1, 
         "response_format": { "type": response_format }
     }
 
-    for i in range(MAX_LLM_RETRIES):
+    logger.info("开始调用模型")
+
+    MAX_MODEL_RETRIES = MAX_LLM_RETRIES // 2
+    MAX_BACKUP_MODEL_RETRIES = MAX_LLM_RETRIES - MAX_MODEL_RETRIES
+
+    for i in range(MAX_MODEL_RETRIES):
         try:
             response = requests.post(LLM_URL, headers=HEADERS, json=payload, timeout=MAX_TIMEOUT_S)
             if response.status_code == 200:
@@ -60,7 +65,7 @@ def llm_request(system_prompt: str, user_prompt: str, temperature: float = 0.1, 
                 time.sleep(LLM_FETCH_INTERVAL_S)
                 continue
         except requests.exceptions.RequestException as e:
-            logger.error(f"LLM模型调用失败，异常信息：{e}")
+            logger.warning(f"LLM模型调用失败，异常信息：{e}")
             logger.info(f"第 {i + 1} 次重试")
             time.sleep(LLM_FETCH_INTERVAL_S)
             continue
@@ -68,17 +73,22 @@ def llm_request(system_prompt: str, user_prompt: str, temperature: float = 0.1, 
     # 尝试备用模型
     payload["model"] = BACKUP_MODEL
     logger.info(f"尝试备用模型： {BACKUP_MODEL}")
-    try:
-        response = requests.post(LLM_URL, headers=HEADERS, json=payload, timeout=MAX_TIMEOUT_S)
-        if response.status_code == 200:
-            result = response.json()["choices"][0]["message"]["content"]
-            logger.info(f"备用模型调用成功，调用模型： {BACKUP_MODEL}, 回复： {result}")
-            return result
-        else:
-            logger.warning(f"备用模型调用失败，状态码： {response.status_code}")
-    except requests.exceptions.RequestException as e:
-        logger.error(f"备用模型调用失败，异常信息：{e}")
+    for i in range(MAX_BACKUP_MODEL_RETRIES):
+        try:
+            response = requests.post(LLM_URL, headers=HEADERS, json=payload, timeout=MAX_TIMEOUT_S)
+            if response.status_code == 200:
+                result = response.json()["choices"][0]["message"]["content"]
+                logger.info(f"备用模型调用成功，调用模型： {BACKUP_MODEL}, 回复： {result}")
+                return result
+            else:
+                logger.warning(f"备用模型调用失败，状态码： {response.status_code}")
+                logger.info(f"第 {i + 1 + MAX_MODEL_RETRIES} 次重试")
+                time.sleep(LLM_FETCH_INTERVAL_S)
+                continue
+        except requests.exceptions.RequestException as e:
+            logger.warning(f"备用模型调用失败，异常信息：{e}")
 
+    logger.error("所有模型调用失败")
     return ""
 
 
@@ -132,6 +142,8 @@ def parse_creator_list_by_llm(content: str) -> str:
 
     user_prompt = f"待提取的公众号文末原文：\n{content}"
     creator_list = llm_request(system_prompt, user_prompt, temperature=0.3, response_format="text")
+    if creator_list == "None":
+        return ""
     return creator_list
 
 def format_creator_list_by_llm(creator_list: str) -> dict[str, list[str]]:

@@ -291,7 +291,7 @@ class Ui_MainForm(object):
         sizePolicy5.setVerticalStretch(0)
         sizePolicy5.setHeightForWidth(self.btn_container.sizePolicy().hasHeightForWidth())
         self.btn_container.setSizePolicy(sizePolicy5)
-        self.btn_container.setMinimumSize(QSize(0, 80))
+        self.btn_container.setMinimumSize(QSize(0, 70))
         self.btn_container.setStyleSheet(u"QPushButton {\n"
 "	background: rgb(6, 173, 86);\n"
 "	color: rgb(255, 255, 255);\n"
@@ -305,7 +305,7 @@ class Ui_MainForm(object):
         self.horizontalLayout = QHBoxLayout(self.btn_container)
         self.horizontalLayout.setObjectName(u"horizontalLayout")
         self.horizontalLayout.setContentsMargins(-1, 0, -1, 5)
-        self.horizontalSpacer_3 = QSpacerItem(40, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
+        self.horizontalSpacer_3 = QSpacerItem(40, 18, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
 
         self.horizontalLayout.addItem(self.horizontalSpacer_3)
 
@@ -318,7 +318,7 @@ class Ui_MainForm(object):
 
         self.horizontalLayout.addWidget(self.step_one_btn)
 
-        self.horizontalSpacer_4 = QSpacerItem(40, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
+        self.horizontalSpacer_4 = QSpacerItem(40, 18, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
 
         self.horizontalLayout.addItem(self.horizontalSpacer_4)
 
@@ -638,14 +638,14 @@ class Ui_MainForm(object):
 "}")
         self.horizontalLayout_7 = QHBoxLayout(self.btn_container_3)
         self.horizontalLayout_7.setObjectName(u"horizontalLayout_7")
-        self.step_three_btn = QPushButton(self.btn_container_3)
-        self.step_three_btn.setObjectName(u"step_three_btn")
-        sizePolicy.setHeightForWidth(self.step_three_btn.sizePolicy().hasHeightForWidth())
-        self.step_three_btn.setSizePolicy(sizePolicy)
-        self.step_three_btn.setMinimumSize(QSize(200, 50))
-        self.step_three_btn.setCursor(QCursor(Qt.CursorShape.PointingHandCursor))
+        self.export_file_btn = QPushButton(self.btn_container_3)
+        self.export_file_btn.setObjectName(u"export_file_btn")
+        sizePolicy.setHeightForWidth(self.export_file_btn.sizePolicy().hasHeightForWidth())
+        self.export_file_btn.setSizePolicy(sizePolicy)
+        self.export_file_btn.setMinimumSize(QSize(200, 50))
+        self.export_file_btn.setCursor(QCursor(Qt.CursorShape.PointingHandCursor))
 
-        self.horizontalLayout_7.addWidget(self.step_three_btn)
+        self.horizontalLayout_7.addWidget(self.export_file_btn)
 
 
         self.verticalLayout_5.addWidget(self.btn_container_3)
@@ -663,7 +663,7 @@ class Ui_MainForm(object):
 
         self.retranslateUi(MainForm)
 
-        self.stackedWidget.setCurrentIndex(2)
+        self.stackedWidget.setCurrentIndex(1)
 
 
         QMetaObject.connectSlotsByName(MainForm)
@@ -685,10 +685,9 @@ class Ui_MainForm(object):
 "<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-size:16pt; color:#ffffff;\">1. \u542f\u52a8\u5e76\u767b\u5f55\u7535\u8111\u7aef\u5fae\u4fe1</span></p>"
                         "\n"
 "<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-size:16pt; color:#ffffff;\">2. \u5355\u51fb\u672c\u9875\u9762\u201c\u5f00\u59cb\u83b7\u53d6\u201d\u6309\u94ae</span></p>\n"
-"<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-size:16pt; color:#ffffff;\">3. \u4ece\u516c\u4f17\u53f7\u5217\u8868\u5355\u51fb\u6253\u5f00\u4efb\u610f\u4e00\u7bc7\u56fe\u6587\uff08\u4e0d\u80fd\u662f\u8d34\u56fe\uff09</span></p>\n"
-"<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-size:16pt; color:#ffffff;\">4. \u5355\u51fb\u672c\u9875\u9762\u201c\u505c\u6b62\u83b7\u53d6\u201d\u6309\u94ae</span></p>\n"
-"<p align=\"center\" style=\" margin-top:15px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><img src=\":/images/ste"
-                        "p_1\" width=\"550\" /></p></body></html>", None))
+"<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-size:16pt; color:#ffffff;\">3. \u4ece\u516c\u4f17\u53f7\u5217\u8868\u6253\u5f00\u4efb\u610f\u4e00\u7bc7\u56fe\u6587\uff08\u4e0d\u80fd\u662f\u8d34\u56fe\uff09</span></p>\n"
+"<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-size:16pt; color:#ffffff;\">4. \u8010\u5fc3\u7b49\u5f85\u83b7\u53d6\u5b8c\u6210</span></p>\n"
+"<p align=\"center\" style=\" margin-top:15px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><img src=\":/images/step_1\" width=\"600\" /></p></body></html>", None))
         self.label_4.setText(QCoreApplication.translate("MainForm", u"\u5df2\u83b7\u53d6\u7684\u516c\u4f17\u53f7ID\uff1a", None))
         self.biz_display_label.setText(QCoreApplication.translate("MainForm", u"\u65e0", None))
         self.reget_biz_btn.setText(QCoreApplication.translate("MainForm", u"\u21bb \u91cd\u65b0\u83b7\u53d6", None))
@@ -706,13 +705,14 @@ class Ui_MainForm(object):
         self.date_edit.setDisplayFormat(QCoreApplication.translate("MainForm", u"yyyy/M", None))
         self.label_5.setText(QCoreApplication.translate("MainForm", u"   \u662f\u5426\u540c\u65f6\u7edf\u8ba1\u7a3f\u8d39", None))
         self.to_calc_fee.setText("")
-        self.label_2.setText(QCoreApplication.translate("MainForm", u"3. \u8bf7\u7528\u9f20\u6807\u53f3\u952e\u4ee5\u4e0b\u94fe\u63a5\u590d\u5236\u5e76\u7c98\u8d34\u5230\u5fae\u4fe1\u804a\u5929\u6253\u5f00\uff1a", None))
+        self.label_2.setText(QCoreApplication.translate("MainForm", u"2. \u70b9\u51fb\u201d\u5f00\u59cb\u83b7\u53d6\u201c\u6309\u94ae\n"
+"3. \u8bf7\u7528\u9f20\u6807\u53f3\u952e\u4ee5\u4e0b\u94fe\u63a5\u590d\u5236\u5e76\u7c98\u8d34\u5230\u5fae\u4fe1\u804a\u5929\u6253\u5f00\uff0c\u5e76\u7528\u9f20\u6807\u6eda\u8f6e\u5f80\u4e0b\u6ed1\u76f4\u5230\u51fa\u73b0\u63d0\u793a\u3002", None))
         self.article_list_url.setText(QCoreApplication.translate("MainForm", u"[URL_HOLDER]", None))
         self.step_two_btn.setText(QCoreApplication.translate("MainForm", u"\u5f00\u59cb\u83b7\u53d6", None))
         self.label_6.setText(QCoreApplication.translate("MainForm", u"<html><head/><body><p align=\"center\"><span style=\" font-size:26pt; font-weight:700; color:#ffffff;\">\u6b63\u5728\u63d0\u53d6\u6587\u7ae0\u6570\u636e\u4e2d\uff0c\u8bf7\u8010\u5fc3\u7b49\u5f85...</span></p></body></html>", None))
         self.label_7.setText(QCoreApplication.translate("MainForm", u"TextLabel", None))
         self.progressBar.setFormat(QCoreApplication.translate("MainForm", u"%p% ", None))
         self.label_3.setText(QCoreApplication.translate("MainForm", u"<html><head/><body><p align=\"center\"><span style=\" font-size:26pt; font-weight:700; color:#ffffff;\">\u7b2c\u4e09\u6b65 \u786e\u8ba4\u6587\u7ae0\u5217\u8868</span></p></body></html>", None))
-        self.step_three_btn.setText(QCoreApplication.translate("MainForm", u"\u6211\u5df2\u786e\u8ba4", None))
+        self.export_file_btn.setText(QCoreApplication.translate("MainForm", u"\u786e\u8ba4\u5e76\u5bfc\u51fa", None))
     # retranslateUi
 

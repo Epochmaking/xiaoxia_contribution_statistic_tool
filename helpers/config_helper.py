@@ -1,6 +1,7 @@
 import dotenv
 
 from utils.logging import get_logger
+from constants.constants import CONFIG_FILE
 
 logger = get_logger("config_setting")
 
@@ -12,7 +13,7 @@ def write_config(kv: dict):
         kv (dict): 键值对字典
     """
     for key, value in kv.items():
-        dotenv.set_key("config.ini", key, value)
+        dotenv.set_key(CONFIG_FILE, key, value)
         logger.info("写入配置: %s = %s", key, value)
 
 def del_config(key: str):
@@ -22,5 +23,5 @@ def del_config(key: str):
     Args:
         key (str): 键名
     """
-    dotenv.unset_key("config.ini", key)
+    dotenv.unset_key(CONFIG_FILE, key)
     logger.info("删除配置: %s", key)

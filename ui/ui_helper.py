@@ -2,10 +2,10 @@ from PySide6.QtWidgets import QTableView, QHeaderView
 from PySide6.QtCore import Qt
 from models.ui_models import ArticleListViewModel, HyperlinkDelegate
 
-def set_article_confirm_table(article_confirm_table: QTableView, all_articles: list[dict] | None = None):
+def set_article_confirm_table(article_confirm_table: QTableView, all_articles: list[dict] | None = None, to_calc_fee: bool = False):
     """设置文章确认表格"""
     # 设置表格模型
-    article_list_view = ArticleListViewModel(all_articles)
+    article_list_view = ArticleListViewModel(all_articles, to_calc_fee=to_calc_fee)
     article_confirm_table.setModel(article_list_view)
 
     # 设置超链接委托

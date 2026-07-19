@@ -209,6 +209,7 @@ class ContentCrawler:
           - 用户完成验证后立即再次隐藏窗口
           - 全程复用同一个 browser + context，保证 Cookie / 会话一致性
         """
+        # TODO: 多线程并行处理，提高效率
         page = None
         try:
             # 1. 单独读取数据库，快速释放db会话，不长期占用
@@ -268,6 +269,7 @@ class ContentCrawler:
                     self.signals.need_user_verify.emit()
                     # 阻塞等待用户操作完成：GUI 层关闭 msgbox 后回传 verify_done 信号
                     # 方案A（GUI交互推荐）：Qt信号等待 + threading.Event 跨线程安全唤醒
+                    # TODO: 用户验证完成自动进入下一步，不用点ok
                     logger.info("爬虫线程进入等待用户验证阻塞...")
                     verify_ok = self.wait_for_user_verify()
                     logger.info(f"爬虫线程已被唤醒，验证结果: {verify_ok}")

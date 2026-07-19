@@ -9,8 +9,7 @@ from PySide6.QtCore import QModelIndex, QPersistentModelIndex, Qt, QEvent
 from PySide6.QtWidgets import QStyledItemDelegate, QStyleOptionViewItem, QStyle
 
 from models.mapping import article_mapping
-from models.article_models import Article
-from database.db import get_session
+from helpers.helpers import get_article_list_from_db
 
 from utils.logging import get_logger
 from utils.format import pretty_json
@@ -22,38 +21,46 @@ class ArticleListViewModel(QStandardItemModel):
     """文章列表视图模型, 用于显示文章列表"""
     # 定义固定的列顺序
     COLUMN_ORDER = [
-        "title", "author", "content_url", "publishing_time", "type", "creators_list",
-        "formatted_creators_list", "view_count", "like_count", "heart_count", "share_count"
+        "publishing_time", "title", "author", "content_url", "type", "creators_list",
+        "formatted_creators_list", "view_count", "like_count", "heart_count", "share_count", "comment_count"
     ]
 
-    def __init__(self, article_list: list[dict] | None = None, parent=None):
+    def __init__(self, article_list: list[dict] | None = None, to_calc_fee: bool = False, parent=None):
         if not article_list:
             try:
-                article_list = self.get_article_list_from_db()
+                article_list = get_article_list_from_db()
             except Exception as e:
                 logger.error("从数据库获取文章列表失败: %s", e)
                 raise e
+            
+        # 拷贝一份列顺序到实例级别，避免修改类属性导致的跨实例互相影响
+        column_order = list(self.COLUMN_ORDER)
+        if not to_calc_fee and "formatted_creators_list" in column_order:
+            column_order.remove("formatted_creators_list")
+        self.column_order = column_order
 
         self.row_count = len(article_list)
-        self.column_count = len(self.COLUMN_ORDER)
+        self.column_count = len(self.column_order)
         super().__init__(self.row_count, self.column_count, parent)
 
         self.setHorizontalHeaderLabels(
-            [article_mapping[key] if key in article_mapping else key for key in self.COLUMN_ORDER]
+            [article_mapping[key] if key in article_mapping else key for key in self.column_order]
         )
 
         for row, article in enumerate(article_list):
-            for col, key in enumerate(self.COLUMN_ORDER):
+            for col, key in enumerate(self.column_order):
                 item = QStandardItem()
                 if key == "content_url":
                     item.setForeground(QColor(121, 139, 163))
                     item.setData(article.get(key, ""), Qt.ItemDataRole.UserRole)
                     item.setData("点击访问", Qt.ItemDataRole.DisplayRole)
-                    item.setTextAlignment(Qt.AlignmentFlag.AlignCenter)
+                    item.setTextAlignment(Qt.AlignmentFlag.AlignCenter | Qt.AlignmentFlag.AlignVCenter)
+
                 elif key == "title":
                     title = article.get(key, "")
                     item.setText(f"《{title}》")
-                    item.setTextAlignment(Qt.AlignmentFlag.AlignLeft)
+                    item.setTextAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter)
+
                 elif key == "publishing_time":
                     # 格式化发布时间：兼容字符串时间戳和 datetime 对象（从数据库读回时）
                     _pt = article.get(key)
@@ -66,16 +73,26 @@ class ArticleListViewModel(QStandardItemModel):
                             except (ValueError, TypeError):
                                 _dt = None
                         if _dt:
-                            item.setText(_dt.strftime("%Y-%m-%d\n%H:%M"))
+                            item.setText(_dt.strftime("%Y-%m-%d\n %H:%M"))
+                            item.setTextAlignment(Qt.AlignmentFlag.AlignCenter | Qt.AlignmentFlag.AlignVCenter)
+
                 elif key == "author":
                     item.setText(str(article.get(key, "")))
-                    item.setTextAlignment(Qt.AlignmentFlag.AlignCenter)
+                    item.setTextAlignment(Qt.AlignmentFlag.AlignCenter | Qt.AlignmentFlag.AlignVCenter)
+
                 elif key == "type":
                     item.setText(str(article.get(key, "")))
-                    item.setTextAlignment(Qt.AlignmentFlag.AlignCenter)
+                    item.setTextAlignment(Qt.AlignmentFlag.AlignCenter | Qt.AlignmentFlag.AlignVCenter)
+
                 elif key in ["view_count", "like_count", "heart_count", "share_count"]:
-                    item.setText(str(article.get(key, "")))
-                    item.setTextAlignment(Qt.AlignmentFlag.AlignRight)
+
+                    count = article.get(key, "")
+                    if count > 100000:
+                        item.setText("10万+")
+                    else:
+                        item.setText(str(count))
+                    item.setTextAlignment(Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignVCenter)
+
                 elif key == "formatted_creators_list":
                     formatted_creators_list = article.get(key, "")
                     if formatted_creators_list:
@@ -85,10 +102,14 @@ class ArticleListViewModel(QStandardItemModel):
                         except json.JSONDecodeError:
                             pass
                     item.setText(formatted_creators_list)
-                    item.setTextAlignment(Qt.AlignmentFlag.AlignLeft)
+                    item.setTextAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter)
+
                 else:
-                    item.setText(str(article.get(key, "")))
-                    item.setTextAlignment(Qt.AlignmentFlag.AlignLeft)
+                    text = article.get(key, "")
+                    if not text or text == "None":
+                        text = "无"
+                    item.setText(text)
+                    item.setTextAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter)
 
                 cell_font = QFont()
                 cell_font.setPointSize(10)
@@ -98,12 +119,6 @@ class ArticleListViewModel(QStandardItemModel):
 
         logger.info("文章列表视图模型初始化完成, 总行数: %d, 总列数: %d", self.row_count, self.column_count)
 
-    def get_article_list_from_db(self) -> list[dict]:
-        """从数据库获取文章列表"""
-        with get_session() as session:
-            articles = session.query(Article).all()
-            article_list = [article.to_dict() for article in articles]
-            return article_list
 
 class HyperlinkDelegate(QStyledItemDelegate):
     """链接委托类"""

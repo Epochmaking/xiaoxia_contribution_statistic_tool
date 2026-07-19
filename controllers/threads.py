@@ -82,6 +82,13 @@ class GetArticleListThread(QThread):
             if True:
                 all_articles = [
                     {
+                        "title": "亲爱的厦大，105岁生日快乐！",
+                        "author": "厦门大学",
+                        "publishing_time": "1782069714",
+                        "type": "图文",
+                        "content_url": "http://mp.weixin.qq.com/s?__biz=MzA3OTM1MTIzNQ==&amp;mid=2653260451&amp;idx=1&amp;sn=e4843bcd275878d723c92d844e8d16ae&amp;chksm=85a8bb22630faa2b1d60a1735e7c83eb49fc22a1a082cbd5b1bde7502d0f3c2ba5f72017579c&amp;scene=27#wechat_redirect",
+                    },
+                    {
                         "title": "今天，厦大获中共中央表彰！12331413434",
                         "author": "厦门大学",
                         "publishing_time": "1782897820",
@@ -206,7 +213,7 @@ class GetArticleContentThread(QThread):
                 # 如果爬虫当前正阻塞在人机验证等待上，先唤醒它以避免死锁
                 try:
                     self.crawler._verify_evt.set()  # pylint: disable=protected-access
-                except Exception:
+                except Exception: # pylint: disable=broad-exception-caught
                     pass
                 self.crawler.close_all_resource()
         finally:
