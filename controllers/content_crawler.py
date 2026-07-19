@@ -1,3 +1,6 @@
+import sys
+import os
+
 import json
 import time
 import re
@@ -47,6 +50,10 @@ class ContentCrawler:
     文章内容爬虫类
     """
     def __init__(self):
+        browser_root = self._get_browser_root()
+        self.env = os.environ.copy()
+        self.env["PLAYWRIGHT_BROWSERS_PATH"] = browser_root
+
         self.signals = CrawlSignals()
         self.playwright = None
         self.context = None
@@ -58,6 +65,20 @@ class ContentCrawler:
         # 因此此处用 DirectConnection 在发射者线程（GUI）直接执行 _on_verify_done，
         # 仅调用 Event.set()——它本身是线程安全的。
         self.signals.verify_done.connect(self._on_verify_done, Qt.ConnectionType.DirectConnection)
+
+    @staticmethod
+    def _get_browser_root() -> str:
+        # 打包后 Nuitka _MEIPASS / 程序目录
+        if hasattr(sys, "_MEIPASS"):
+            # onefile 模式临时解压目录
+            base = os.path.dirname(sys.executable)
+            return os.path.join(base, "ms-playwright")
+        elif "__compiled__" in globals():
+            # standalone 文件夹模式
+            base = os.path.abspath(".")
+            return os.path.join(base, "ms-playwright")
+        # 本地开发环境，读取系统默认缓存
+        return os.path.join(os.environ["LOCALAPPDATA"], "ms-playwright")
 
     def _on_verify_done(self, ok: bool):
         """GUI调用的槽函数：标记验证完成，释放阻塞"""
@@ -97,6 +118,7 @@ class ContentCrawler:
                 "--window-position=-32000,-32000",  # 启动时移出屏幕外，默认为"后台静默"
                 "--window-size=1280,720",
             ],
+            env=self.env, # type: ignore
             **CONTEXT_CONFIG.copy()
         )
         self.context.set_default_timeout(100000)  # 全局100s超时
