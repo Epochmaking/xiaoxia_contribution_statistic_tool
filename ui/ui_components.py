@@ -92,10 +92,20 @@ class MainWindow(QWidget, Ui_MainForm):
             self.index_status_msg_box.setText("未获取到文章索引")
             self.index_status_msg_box.setStandardButtons(QMessageBox.StandardButton.Ok)
 
-    def on_report_progress(self, progress: str):
-        """汇报进度事件"""
+    def on_report_progress(self, current: int, total: int, message: str):
+        """汇报进度事件：以每篇文章为单位更新进度条和消息"""
         progress_bar = self.progress_bar
         progress_msg = self.progress_msg
+        if progress_bar is not None:
+            # 首次收到进度时初始化范围
+            if progress_bar.minimum() != 0 or progress_bar.maximum() != total:
+                progress_bar.setRange(0, total)
+            progress_bar.setValue(current)
+            # 同时更新百分比显示
+            percent = int(current * 100 / total) if total > 0 else 0
+            progress_bar.setFormat(f"{current}/{total} ({percent}%)")
+        if progress_msg is not None:
+            progress_msg.setText(message)
 
     # 步骤一任务完成
     def get_mp_biz_task_over(self, biz_result: str):
@@ -331,6 +341,13 @@ class MainWindow(QWidget, Ui_MainForm):
         if not self.step_start:
             self.step_start = True
             logger.info("开始分析文章数据")
+
+            # 重置进度条
+            total = len(self.article_list) if self.article_list else 0
+            self.progress_bar.setRange(0, total if total > 0 else 1)
+            self.progress_bar.setValue(0)
+            self.progress_bar.setFormat(f"0/{total} (0%)" if total > 0 else "等待数据")
+            self.progress_msg.setText("正在初始化...")
 
             self.get_article_content_thread = GetArticleContentThread(self.article_list, self.to_calc_fee.isChecked())
             self.get_article_content_thread.report_progress.connect(self.on_report_progress)

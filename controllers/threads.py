@@ -79,7 +79,7 @@ class GetArticleListThread(QThread):
                 time.sleep(0.5)
 
             # ========== 调试用 ==========
-            if True:
+            if False:
                 all_articles = [
                     {
                         "title": "亲爱的厦大，105岁生日快乐！",
@@ -175,7 +175,7 @@ class GetArticleContentThread(QThread):
     article_list_persist_ok = Signal()
     need_user_verify = Signal()      # 转发 ContentCrawler.need_user_verify
     task_over = Signal(bool)
-    report_progress = Signal(str)
+    report_progress = Signal(int, int, str)  # (当前文章序号, 文章总数, 详细消息)
     def __init__(self, article_list: list[dict], to_calc_fee: bool):
         super().__init__()
         # self.to_stop = False # 停止thread标志
@@ -195,9 +195,8 @@ class GetArticleContentThread(QThread):
             # 转发爬虫的 need_user_verify 信号到线程自身，GUI 层连接线程信号即可
             self.crawler.signals.need_user_verify.connect(self.need_user_verify.emit)
             self.crawler.signals.task_over.connect(self.task_over.emit)
-
-            # 同时把日志也转发出来（供未来扩展）
-            self.crawler.signals.log_msg.connect(self.report_progress.emit)
+            # 转发进度信号到 GUI：(当前序号, 总数, 详细消息)
+            self.crawler.signals.progress_update.connect(self.report_progress.emit)
             self.crawler.crawl_all_articles(self.to_calc_fee)
 
         except Exception as e:

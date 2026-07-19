@@ -39,6 +39,7 @@ class CrawlSignals(QObject):
     need_user_verify = Signal()    # 需要用户手动验证弹窗提示
     task_over = Signal(bool)      # 任务结束信号
     verify_done = Signal(bool)     # [GUI → 爬虫：用户已完成人机验证，bool=True
+    progress_update = Signal(int, int, str)  # (当前进度, 总数, 详细消息)
 
 
 class ContentCrawler:
@@ -233,7 +234,8 @@ class ContentCrawler:
             page = self.context.new_page()
 
             # 3. 循环遍历所有文章URL
-            for article in article_list:
+            total_count = len(article_list)
+            for idx, article in enumerate(article_list, start=1):
                 url = article.content_url
                 if not url:
                     logger.error(f"文章《{article.title}》URL记录不完整。ID:{article.id}")
@@ -241,7 +243,9 @@ class ContentCrawler:
                     self.signals.task_over.emit(False)
                     return
 
-                self.signals.log_msg.emit(f"正在访问：《{article.title}》")
+                self.signals.progress_update.emit(
+                    idx, total_count, f"正在访问 {idx}/{total_count}：《{article.title}》"
+                )
 
                 for i in range(MAX_RETRIES):
                     try:
@@ -304,8 +308,16 @@ class ContentCrawler:
                             f"落款信息：{data.get('creator_list', '')}\n格式化作者列表：{data.get('formatted_creator_list', {})}"
                         )
                         self.signals.log_msg.emit(f"更新成功 ID:{article.id}")
+                        self.signals.progress_update.emit(
+                            idx, total_count,
+                            f"已完成 {idx}/{total_count}：《{article.title}》 - 阅读:{data.get('view_count', 0)}"
+                        )
                     else:
                         logger.warning(f"数据库中未找到 ID={article.id} 的文章，跳过写入")
+                        self.signals.progress_update.emit(
+                            idx, total_count,
+                            f"已跳过 {idx}/{total_count}：《{article.title}》（数据库中未找到）"
+                        )
 
             logger.info("全部文章爬取完成")
             self.signals.log_msg.emit("全部文章爬取完成")
