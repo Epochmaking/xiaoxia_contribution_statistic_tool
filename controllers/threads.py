@@ -175,6 +175,7 @@ class GetArticleContentThread(QThread):
     article_list_persist_ok = Signal()
     need_user_verify = Signal()      # 转发 ContentCrawler.need_user_verify
     task_over = Signal(bool)
+    report_progress = Signal(str)
     def __init__(self, article_list: list[dict], to_calc_fee: bool):
         super().__init__()
         # self.to_stop = False # 停止thread标志
@@ -196,7 +197,7 @@ class GetArticleContentThread(QThread):
             self.crawler.signals.task_over.connect(self.task_over.emit)
 
             # 同时把日志也转发出来（供未来扩展）
-            #self.crawler.signals.log_msg.connect(lambda s: logger.info(s))
+            self.crawler.signals.log_msg.connect(self.report_progress.emit)
             self.crawler.crawl_all_articles(self.to_calc_fee)
 
         except Exception as e:

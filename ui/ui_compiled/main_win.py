@@ -571,18 +571,18 @@ class Ui_MainForm(object):
 
         self.verticalLayout_9.addWidget(self.label_6)
 
-        self.label_7 = QLabel(self.page_3)
-        self.label_7.setObjectName(u"label_7")
-        self.label_7.setMaximumSize(QSize(16777215, 25))
-        self.label_7.setFont(font5)
-        self.label_7.setStyleSheet(u"color: rgb(255, 255, 255)")
+        self.progress_msg = QLabel(self.page_3)
+        self.progress_msg.setObjectName(u"progress_msg")
+        self.progress_msg.setMaximumSize(QSize(16777215, 25))
+        self.progress_msg.setFont(font5)
+        self.progress_msg.setStyleSheet(u"color: rgb(255, 255, 255)")
 
-        self.verticalLayout_9.addWidget(self.label_7)
+        self.verticalLayout_9.addWidget(self.progress_msg)
 
-        self.progressBar = QProgressBar(self.page_3)
-        self.progressBar.setObjectName(u"progressBar")
-        self.progressBar.setMaximumSize(QSize(16777215, 12))
-        self.progressBar.setStyleSheet(u"QProgressBar {\n"
+        self.progress_bar = QProgressBar(self.page_3)
+        self.progress_bar.setObjectName(u"progress_bar")
+        self.progress_bar.setMaximumSize(QSize(16777215, 12))
+        self.progress_bar.setStyleSheet(u"QProgressBar {\n"
 "    /* \u6574\u4f53\u8fdb\u5ea6\u6761\u80cc\u666f\uff08\u672a\u586b\u5145\u533a\u57df\uff09 */\n"
 "    background-color: #cccccc;\n"
 "    border-radius: 4px;    /* \u5706\u89d2 */\n"
@@ -601,12 +601,12 @@ class Ui_MainForm(object):
 "    color: #ffffff;\n"
 "    font-size: 8px;\n"
 "}")
-        self.progressBar.setValue(24)
-        self.progressBar.setTextVisible(True)
-        self.progressBar.setInvertedAppearance(False)
-        self.progressBar.setTextDirection(QProgressBar.Direction.TopToBottom)
+        self.progress_bar.setValue(24)
+        self.progress_bar.setTextVisible(True)
+        self.progress_bar.setInvertedAppearance(False)
+        self.progress_bar.setTextDirection(QProgressBar.Direction.TopToBottom)
 
-        self.verticalLayout_9.addWidget(self.progressBar)
+        self.verticalLayout_9.addWidget(self.progress_bar)
 
         self.stackedWidget.addWidget(self.page_3)
         self.page_4 = QWidget()
@@ -663,7 +663,7 @@ class Ui_MainForm(object):
 
         self.retranslateUi(MainForm)
 
-        self.stackedWidget.setCurrentIndex(1)
+        self.stackedWidget.setCurrentIndex(2)
 
 
         QMetaObject.connectSlotsByName(MainForm)
@@ -710,8 +710,8 @@ class Ui_MainForm(object):
         self.article_list_url.setText(QCoreApplication.translate("MainForm", u"[URL_HOLDER]", None))
         self.step_two_btn.setText(QCoreApplication.translate("MainForm", u"\u5f00\u59cb\u83b7\u53d6", None))
         self.label_6.setText(QCoreApplication.translate("MainForm", u"<html><head/><body><p align=\"center\"><span style=\" font-size:26pt; font-weight:700; color:#ffffff;\">\u6b63\u5728\u63d0\u53d6\u6587\u7ae0\u6570\u636e\u4e2d\uff0c\u8bf7\u8010\u5fc3\u7b49\u5f85...</span></p></body></html>", None))
-        self.label_7.setText(QCoreApplication.translate("MainForm", u"TextLabel", None))
-        self.progressBar.setFormat(QCoreApplication.translate("MainForm", u"%p% ", None))
+        self.progress_msg.setText(QCoreApplication.translate("MainForm", u"TextLabel", None))
+        self.progress_bar.setFormat(QCoreApplication.translate("MainForm", u"%p% ", None))
         self.label_3.setText(QCoreApplication.translate("MainForm", u"<html><head/><body><p align=\"center\"><span style=\" font-size:26pt; font-weight:700; color:#ffffff;\">\u7b2c\u4e09\u6b65 \u786e\u8ba4\u6587\u7ae0\u5217\u8868</span></p></body></html>", None))
         self.export_file_btn.setText(QCoreApplication.translate("MainForm", u"\u786e\u8ba4\u5e76\u5bfc\u51fa", None))
     # retranslateUi

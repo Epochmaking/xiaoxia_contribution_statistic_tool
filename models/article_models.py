@@ -22,3 +22,4 @@ class Article(Base):
     like_count: Mapped[int] = mapped_column(Integer, nullable=True, default=None)
     heart_count: Mapped[int] = mapped_column(Integer, nullable=True, default=None)
     share_count: Mapped[int] = mapped_column(Integer, nullable=True, default=None)
+    collect_count: Mapped[int] = mapped_column(Integer, nullable=True, default=None)

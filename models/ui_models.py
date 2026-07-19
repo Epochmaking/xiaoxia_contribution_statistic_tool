@@ -22,7 +22,7 @@ class ArticleListViewModel(QStandardItemModel):
     # 定义固定的列顺序
     COLUMN_ORDER = [
         "publishing_time", "title", "author", "content_url", "type", "creators_list",
-        "formatted_creators_list", "view_count", "like_count", "heart_count", "share_count", "comment_count"
+        "formatted_creators_list", "view_count", "like_count", "heart_count", "share_count", "collect_count"
     ]
 
     def __init__(self, article_list: list[dict] | None = None, to_calc_fee: bool = False, parent=None):
@@ -32,7 +32,7 @@ class ArticleListViewModel(QStandardItemModel):
             except Exception as e:
                 logger.error("从数据库获取文章列表失败: %s", e)
                 raise e
-            
+ 
         # 拷贝一份列顺序到实例级别，避免修改类属性导致的跨实例互相影响
         column_order = list(self.COLUMN_ORDER)
         if not to_calc_fee and "formatted_creators_list" in column_order:
@@ -84,13 +84,17 @@ class ArticleListViewModel(QStandardItemModel):
                     item.setText(str(article.get(key, "")))
                     item.setTextAlignment(Qt.AlignmentFlag.AlignCenter | Qt.AlignmentFlag.AlignVCenter)
 
-                elif key in ["view_count", "like_count", "heart_count", "share_count"]:
+                elif key == "view_count":
 
                     count = article.get(key, "")
                     if count > 100000:
                         item.setText("10万+")
                     else:
                         item.setText(str(count))
+                    item.setTextAlignment(Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignVCenter)
+
+                elif key in ["like_count", "heart_count", "share_count", "collect_count"]:
+                    item.setText(str(article.get(key, "")))
                     item.setTextAlignment(Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignVCenter)
 
                 elif key == "formatted_creators_list":
@@ -108,7 +112,7 @@ class ArticleListViewModel(QStandardItemModel):
                     text = article.get(key, "")
                     if not text or text == "None":
                         text = "无"
-                    item.setText(text)
+                    item.setText(str(text))
                     item.setTextAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter)
 
                 cell_font = QFont()

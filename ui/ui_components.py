@@ -92,6 +92,11 @@ class MainWindow(QWidget, Ui_MainForm):
             self.index_status_msg_box.setText("未获取到文章索引")
             self.index_status_msg_box.setStandardButtons(QMessageBox.StandardButton.Ok)
 
+    def on_report_progress(self, progress: str):
+        """汇报进度事件"""
+        progress_bar = self.progress_bar
+        progress_msg = self.progress_msg
+
     # 步骤一任务完成
     def get_mp_biz_task_over(self, biz_result: str):
         """步骤一任务完成"""
@@ -328,6 +333,7 @@ class MainWindow(QWidget, Ui_MainForm):
             logger.info("开始分析文章数据")
 
             self.get_article_content_thread = GetArticleContentThread(self.article_list, self.to_calc_fee.isChecked())
+            self.get_article_content_thread.report_progress.connect(self.on_report_progress)
             self.get_article_content_thread.article_list_persist_ok.connect(
                 self.get_article_content_thread_article_list_persist_ok
             )

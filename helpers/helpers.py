@@ -167,7 +167,7 @@ def get_reader_stats(content_url: str, template_flow: HTTPFlow) -> dict:
         like_count = stat["like_num"] or 0
         old_like_count = stat["old_like_num"] or 0
         share_num = stat["share_num"] or 0
-        comment_count = stat["prompted"] or 0
+        collect_count = stat["collect_num"] or 0
 
 
         return {
@@ -175,7 +175,7 @@ def get_reader_stats(content_url: str, template_flow: HTTPFlow) -> dict:
             "heart_count": like_count, # 爱心量
             "like_count": old_like_count, # 在看量
             "share_count": share_num, # 分享量
-            "comment_count": comment_count, # 评论量
+            "collect_count": collect_count, # 收藏量
         }
     except Exception as e: # pylint: disable=broad-exception-caught
         logger.warning("get reader stats failed: %s", e)

@@ -10,7 +10,7 @@ article_mapping = {
     "like_count": "点赞数",
     "heart_count": "爱心数",
     "share_count": "分享数",
-    "comment_count": "评论数",
+    "collect_count": "收藏数",
 }
 
 article_type_mapping = {

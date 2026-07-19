@@ -196,6 +196,7 @@ class ContentCrawler:
             "heart_count": reader_stats.get("heart_count", 0), # 爱心量
             "like_count": reader_stats.get("like_count", 0), # 在看量
             "share_count": reader_stats.get("share_count", 0), # 分享量
+            "collect_count": reader_stats.get("collect_count", 0), # 收藏量
             "creator_list": creator_list,
             "formatted_creator_list": formatted_creator_list,
         }
@@ -289,17 +290,18 @@ class ContentCrawler:
                 with get_session() as db_session:
                     target = db_session.query(Article).filter(Article.id == article.id).first()
                     if target:
-                        target.view_count = data["view_count"]
-                        target.heart_count = data["heart_count"]
-                        target.like_count = data["like_count"]
-                        target.share_count = data["share_count"]
-                        target.creators_list = data["creator_list"]
-                        target.formatted_creators_list = json.dumps(data["formatted_creator_list"], ensure_ascii=False)
+                        target.view_count = data.get("view_count", 0)
+                        target.heart_count = data.get("heart_count", 0)
+                        target.like_count = data.get("like_count", 0)
+                        target.share_count = data.get("share_count", 0)
+                        target.collect_count = data.get("collect_count", 0)
+                        target.creators_list = data.get("creator_list", "")
+                        target.formatted_creators_list = json.dumps(data.get("formatted_creator_list", {}), ensure_ascii=False)
                         db_session.commit()
                         logger.info(
                             f"更新成功 ID:{article.id}, 题目：《{article.title}》\n"
-                            f"阅读量：{data['view_count']}, 爱心量：{data['heart_count']}, 在看量：{data['like_count']}, 分享量：{data['share_count']},\n"
-                            f"落款信息：{data['creator_list']}\n格式化作者列表：{data['formatted_creator_list']}"
+                            f"阅读量：{data.get('view_count', 0)}, 爱心量：{data.get('heart_count', 0)}, 在看量：{data.get('like_count', 0)}, 分享量：{data.get('share_count', 0)}, 评论量：{data.get('comment_count', 0)}\n"
+                            f"落款信息：{data.get('creator_list', '')}\n格式化作者列表：{data.get('formatted_creator_list', {})}"
                         )
                         self.signals.log_msg.emit(f"更新成功 ID:{article.id}")
                     else:
@@ -310,6 +312,7 @@ class ContentCrawler:
             self.signals.task_over.emit(True)
 
         except Exception as err: # pylint: disable=broad-exception-caught
+            logger.error(f"爬取任务异常终止：{str(err)}")
             self.signals.log_msg.emit(f"爬取任务异常终止：{str(err)}")
             self.signals.task_over.emit(False)
         finally:
