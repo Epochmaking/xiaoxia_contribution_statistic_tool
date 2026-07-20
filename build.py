@@ -22,7 +22,7 @@ def main():
     args = [
         sys.executable, "-m", "nuitka", "main.py",
         "--standalone",
-        "--windows-disable-console",
+        "--windows-console-mode=disable",
         "--enable-plugin=pyside6",
         "--enable-plugin=playwright",
         f"--include-data-dir={BROWSER_DIR}",
