@@ -8,7 +8,8 @@ from ui.ui_compiled.main_win import Ui_MainForm
 from ui.ui_helper import set_article_confirm_table
 from controllers.threads import GetMpBizThread, GetArticleListThread, GetArticleContentThread
 from controllers.export import export_to_file
-from helpers.config_helper import write_config, del_config
+from helpers.config_helper import write_config, del_config, read_config
+from helpers.cert_helper import ensure_cert_status
 from exceptions import GetArticleContentError
 
 import constants as consts
@@ -65,10 +66,15 @@ class MainWindow(QWidget, Ui_MainForm):
         self.article_list = []
 
         # 注册弹窗
-        self.index_status_msg_box = QMessageBox()
+        self.index_status_msg_box = QMessageBox(parent=self)
+        self.index_status_msg_box.setModal(False)
         self.index_status_msg_box.setWindowTitle("推送统计工具提示")
-        self.get_biz_msg_box = QMessageBox()
+        self.get_biz_msg_box = QMessageBox(parent=self)
+        self.get_biz_msg_box.setModal(False)
         self.get_biz_msg_box.setWindowTitle("推送统计工具提示")
+
+        # 检查证书状态
+        ensure_cert_status(self)
 
     # 汇报文章索引事件
     def on_report_index(self, index: int): 
@@ -202,25 +208,21 @@ class MainWindow(QWidget, Ui_MainForm):
             return
 
     def need_verify(self):
-        """需要验证：用户点击确认后回传信号给爬虫线程"""
+        """需要验证：弹窗仅作提示，用户完成浏览器验证后点击确认即自动继续爬取，不可取消"""
         logger.info("需要验证 - 弹出提示等待用户完成浏览器验证后点击确认")
         msg_box = QMessageBox()
         msg_box.setWindowTitle("推送统计工具提示")
-        msg_box.setText("请在弹出的浏览器窗口中完成人机验证，完成后请点击【确认】以继续爬取。")
-        msg_box.setStandardButtons(QMessageBox.StandardButton.Ok | QMessageBox.StandardButton.Cancel)
+        msg_box.setText("请在弹出的浏览器窗口中完成人机验证，完成后请点击【OK】以继续爬取。")
+        msg_box.setStandardButtons(QMessageBox.StandardButton.Ok)
         msg_box.setWindowFlags(msg_box.windowFlags() | Qt.WindowType.WindowStaysOnTopHint)
-        ret = msg_box.exec()
+        msg_box.exec()
 
-        # 关键：回传信号给爬虫，告诉它"用户已操作，可继续"
-        ok = ret == QMessageBox.StandardButton.Ok
-        if (
-            self.get_article_content_thread is not None
-            and self.get_article_content_thread.crawler is not None
-        ):
+        # 回传信号给爬虫，用户已操作，可继续
+        ok = True
+        if (self.get_article_content_thread is not None
+            and self.get_article_content_thread.crawler is not None):
             self.get_article_content_thread.crawler.signals.verify_done.emit(ok)
             logger.info(f"已向爬虫发出验证完成信号: ok={ok}")
-        else:
-            logger.warning("未获取到活跃的爬虫对象，无法回传验证信号")
 
 
     # 鼠标按下
@@ -266,7 +268,7 @@ class MainWindow(QWidget, Ui_MainForm):
         self.step_one_btn.setText("开始获取")
         self.step_start = False
         self.step_one_btn.disconnect(self.step_one_btn_connection)
-        self.step_one_btn.clicked.connect(self.step_one_btn_on_click)
+        self.step_one_btn_connection = self.step_one_btn.clicked.connect(self.step_one_btn_on_click)
 
     def go_to_next_step(self):
         """下一步"""
@@ -303,6 +305,7 @@ class MainWindow(QWidget, Ui_MainForm):
         else:
             self.step_start = False
             self.step_one_btn.setText("开始获取")
+            self.get_biz_msg_box.hide()
             logger.info("停止获取微信公众号BIZ")
             if self.get_mp_biz_thread is not None:
                 self.get_mp_biz_thread.stop()
@@ -330,6 +333,7 @@ class MainWindow(QWidget, Ui_MainForm):
         else:
             self.step_start = False
             self.step_two_btn.setText("开始获取")
+            self.index_status_msg_box.hide()
             logger.info("停止获取文章列表")
             if self.get_article_list_thread is not None:
                 self.get_article_list_thread.stop()
@@ -378,11 +382,22 @@ class MainWindow(QWidget, Ui_MainForm):
             # 先计算稿费
             ...
 
-        # 弹出文件夹选择器
-        folder_str = QFileDialog.getExistingDirectory(self, "选择导出文件夹")
+        # 读取上次选择的导出目录，作为文件夹选择器的初始目录
+        last_export_dir = read_config("last_export_dir", "") or ""
+
+        # 弹出文件夹选择器，定位到上次选择的目录
+        folder_str = QFileDialog.getExistingDirectory(
+            self,
+            "选择导出文件夹",
+            last_export_dir
+        )
         if not folder_str:
             return
         folder_path = Path(folder_str)
+
+        # 记录本次选择的目录，下次导出时默认定位到这里
+        write_config({"last_export_dir": folder_str})
+
         export_to_file(folder_path, to_calc_fee=self.to_calc_fee.isChecked())
         msg_box = QMessageBox()
         msg_box.setWindowTitle("导出提示")

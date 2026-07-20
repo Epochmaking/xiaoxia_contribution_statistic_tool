@@ -638,6 +638,18 @@ class Ui_MainForm(object):
 "}")
         self.horizontalLayout_7 = QHBoxLayout(self.btn_container_3)
         self.horizontalLayout_7.setObjectName(u"horizontalLayout_7")
+        self.label_7 = QLabel(self.btn_container_3)
+        self.label_7.setObjectName(u"label_7")
+        sizePolicy8 = QSizePolicy(QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Preferred)
+        sizePolicy8.setHorizontalStretch(0)
+        sizePolicy8.setVerticalStretch(0)
+        sizePolicy8.setHeightForWidth(self.label_7.sizePolicy().hasHeightForWidth())
+        self.label_7.setSizePolicy(sizePolicy8)
+        self.label_7.setFont(font5)
+        self.label_7.setStyleSheet(u"color: rgb(255, 255, 255);")
+
+        self.horizontalLayout_7.addWidget(self.label_7, 0, Qt.AlignmentFlag.AlignLeft)
+
         self.export_file_btn = QPushButton(self.btn_container_3)
         self.export_file_btn.setObjectName(u"export_file_btn")
         sizePolicy.setHeightForWidth(self.export_file_btn.sizePolicy().hasHeightForWidth())
@@ -645,7 +657,11 @@ class Ui_MainForm(object):
         self.export_file_btn.setMinimumSize(QSize(200, 50))
         self.export_file_btn.setCursor(QCursor(Qt.CursorShape.PointingHandCursor))
 
-        self.horizontalLayout_7.addWidget(self.export_file_btn)
+        self.horizontalLayout_7.addWidget(self.export_file_btn, 0, Qt.AlignmentFlag.AlignHCenter)
+
+        self.horizontalSpacer_2 = QSpacerItem(310, 20, QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Minimum)
+
+        self.horizontalLayout_7.addItem(self.horizontalSpacer_2)
 
 
         self.verticalLayout_5.addWidget(self.btn_container_3)
@@ -663,7 +679,7 @@ class Ui_MainForm(object):
 
         self.retranslateUi(MainForm)
 
-        self.stackedWidget.setCurrentIndex(2)
+        self.stackedWidget.setCurrentIndex(3)
 
 
         QMetaObject.connectSlotsByName(MainForm)
@@ -709,10 +725,11 @@ class Ui_MainForm(object):
 "3. \u8bf7\u7528\u9f20\u6807\u53f3\u952e\u4ee5\u4e0b\u94fe\u63a5\u590d\u5236\u5e76\u7c98\u8d34\u5230\u5fae\u4fe1\u804a\u5929\u6253\u5f00\uff0c\u5e76\u7528\u9f20\u6807\u6eda\u8f6e\u5f80\u4e0b\u6ed1\u76f4\u5230\u51fa\u73b0\u63d0\u793a\u3002", None))
         self.article_list_url.setText(QCoreApplication.translate("MainForm", u"[URL_HOLDER]", None))
         self.step_two_btn.setText(QCoreApplication.translate("MainForm", u"\u5f00\u59cb\u83b7\u53d6", None))
-        self.label_6.setText(QCoreApplication.translate("MainForm", u"<html><head/><body><p align=\"center\"><span style=\" font-size:26pt; font-weight:700; color:#ffffff;\">\u6b63\u5728\u63d0\u53d6\u6587\u7ae0\u6570\u636e\u4e2d\uff0c\u8bf7\u8010\u5fc3\u7b49\u5f85...</span></p></body></html>", None))
+        self.label_6.setText(QCoreApplication.translate("MainForm", u"<html><head/><body><p align=\"center\"><span style=\" font-size:26pt; color:#ffffff;\">\u6b63\u5728\u63d0\u53d6\u6587\u7ae0\u6570\u636e\u4e2d\uff0c\u8bf7\u8010\u5fc3\u7b49\u5f85...</span></p><p align=\"center\"><span style=\" font-size:20pt; color:#ffffff;\">\u5982\u9047\u5f39\u51fa\u6d4f\u89c8\u5668\u4eba\u5de5\u9a8c\u8bc1\uff0c\u8bf7\u9a8c\u8bc1\u901a\u8fc7\u540e\u70b9\u51fb\u201cOK\u201d\u5373\u53ef</span></p></body></html>", None))
         self.progress_msg.setText(QCoreApplication.translate("MainForm", u"TextLabel", None))
         self.progress_bar.setFormat(QCoreApplication.translate("MainForm", u"%p% ", None))
         self.label_3.setText(QCoreApplication.translate("MainForm", u"<html><head/><body><p align=\"center\"><span style=\" font-size:26pt; font-weight:700; color:#ffffff;\">\u7b2c\u4e09\u6b65 \u786e\u8ba4\u6587\u7ae0\u5217\u8868</span></p></body></html>", None))
+        self.label_7.setText(QCoreApplication.translate("MainForm", u"Tips: \u62d6\u52a8\u884c\u9996\u6216\u5217\u9996\u53ef\u4ee5\u8c03\u6574\u8868\u683c\u5927\u5c0f\u54e6~", None))
         self.export_file_btn.setText(QCoreApplication.translate("MainForm", u"\u786e\u8ba4\u5e76\u5bfc\u51fa", None))
     # retranslateUi
 

@@ -1,10 +1,14 @@
 import os
 import sys
 import subprocess
+from pathlib import Path
 
 from utils.logging import get_logger
 
 logger = get_logger(__name__)
+
+BROWSER_DIR = ".local-browsers=playwright\\driver\\package\\.local-browsers"
+ASSETS_DIR = "assets=assets"
 
 def main():
     # 项目根目录
@@ -12,7 +16,7 @@ def main():
     # 输出目录
     output_dir = os.path.join(root, "build")
     # 图标路径，不存在就自动移除该参数
-    ico_path = os.path.join(root, "app.ico")
+    ico_path = os.path.join(root, "xiaoxia.ico")
 
     # 构造 nuitka 参数列表
     args = [
@@ -21,7 +25,8 @@ def main():
         "--windows-disable-console",
         "--enable-plugin=pyside6",
         "--enable-plugin=playwright",
-        f"--include-data-dir={os.environ['LOCALAPPDATA']}\\ms-playwright=ms-playwright",
+        f"--include-data-dir={BROWSER_DIR}",
+        f"--include-data-dir={ASSETS_DIR}",
         "--deployment",
         "--lto=auto",
         "--remove-output",
@@ -42,7 +47,7 @@ def main():
     logger.info("=" * 50)
 
     # 调用打包
-    ret = subprocess.run(args, cwd=root)
+    ret = subprocess.run(args, cwd=root, check=True)
     if ret.returncode == 0:
         logger.info(f"\n打包完成！产物输出目录：{output_dir}")
     else:

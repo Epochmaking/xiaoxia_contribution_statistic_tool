@@ -286,7 +286,8 @@ class ContentCrawler:
                         time.sleep(FETCH_INTERVAL_S)
 
                 # 检测验证页面 —— 不销毁 browser/context，只切换窗口可见性
-                if self.is_verify_page(page):
+                # 循环验证：用户验证完再检查跳转后的页面是否仍是验证页，是则继续提示
+                while self.is_verify_page(page):
                     logger.info(f"检测到人机验证, 文章《{article.title}》")
                     self.signals.log_msg.emit("检测到人机验证，请在浏览器窗口完成验证...")
                     # 将当前 page 标记为"验证页"，供 CDP 操作窗口使用
@@ -296,14 +297,30 @@ class ContentCrawler:
                     self.signals.need_user_verify.emit()
                     # 阻塞等待用户操作完成：GUI 层关闭 msgbox 后回传 verify_done 信号
                     # 方案A（GUI交互推荐）：Qt信号等待 + threading.Event 跨线程安全唤醒
-                    # TODO: 用户验证完成自动进入下一步，不用点ok
                     logger.info("爬虫线程进入等待用户验证阻塞...")
                     verify_ok = self.wait_for_user_verify()
                     logger.info(f"爬虫线程已被唤醒，验证结果: {verify_ok}")
 
-                    # 验证后刷新会话缓存，并立刻把窗口重新隐藏
+                    # 验证后等待页面跳转，再检查是否仍停留在验证页
                     page.wait_for_timeout(1500)
-                    self._set_window_visible(False, page=page)
+
+                    # 若用户取消验证，则跳出循环，由上层解析失败逻辑处理
+                    if not verify_ok:
+                        logger.warning(f"用户取消验证，文章《{article.title}》")
+                        self.signals.log_msg.emit("用户取消验证，跳过当前文章")
+                        break
+
+                    # 再次检查页面是否已离开验证页，否则继续循环提示
+                    if self.is_verify_page(page):
+                        logger.info(f"验证后页面仍为人机验证页，再次提示用户, 文章《{article.title}》")
+                        self.signals.log_msg.emit("验证未完成，请继续在浏览器窗口完成验证...")
+                        continue
+
+                    # 已成功离开验证页
+                    break
+
+                # 验证流程结束后，把窗口重新隐藏
+                self._set_window_visible(False, page=page)
 
                 # 解析文章数据
                 data = self.parse_article_data(page, to_calc_fee)
@@ -326,8 +343,8 @@ class ContentCrawler:
                         db_session.commit()
                         logger.info(
                             f"更新成功 ID:{article.id}, 题目：《{article.title}》\n"
-                            f"阅读量：{data.get('view_count', 0)}, 爱心量：{data.get('heart_count', 0)}, 在看量：{data.get('like_count', 0)}, 分享量：{data.get('share_count', 0)}, 评论量：{data.get('comment_count', 0)}\n"
-                            f"落款信息：{data.get('creator_list', '')}\n格式化作者列表：{data.get('formatted_creator_list', {})}"
+                            f"阅读：{data.get('view_count', 0)}, 爱心：{data.get('heart_count', 0)}, 点赞：{data.get('like_count', 0)}, 分享：{data.get('share_count', 0)}, 收藏：{data.get('collect_count', 0)}\n"
+                            f"落款信息：\n{data.get('creator_list', '')}\n格式化作者列表：\n{data.get('formatted_creator_list', {})}"
                         )
                         self.signals.log_msg.emit(f"更新成功 ID:{article.id}")
                         self.signals.progress_update.emit(

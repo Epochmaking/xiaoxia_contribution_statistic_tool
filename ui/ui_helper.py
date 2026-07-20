@@ -44,6 +44,11 @@ def set_article_confirm_table(article_confirm_table: QTableView, all_articles: l
             font-size: 12px;
             border: none;
             border-bottom: 1px solid #E5E7EB;
+            border-right: 1px solid #E5E7EB;
+        }
+        /* 表头最后一列去除右侧竖线，避免与表格外边框重复 */
+        QHeaderView::section:last {
+            border-right: none;
         }
         /* 垂直滚动条整体 */
         QTableView QScrollBar:vertical {
