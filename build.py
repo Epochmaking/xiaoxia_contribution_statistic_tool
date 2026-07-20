@@ -1,7 +1,6 @@
 import os
 import sys
 import subprocess
-from pathlib import Path
 
 from utils.logging import get_logger
 
@@ -16,7 +15,7 @@ def main():
     # 输出目录
     output_dir = os.path.join(root, "build")
     # 图标路径，不存在就自动移除该参数
-    ico_path = os.path.join(root, "xiaoxia.ico")
+    ico_path = os.path.join(root, "None.ico")
 
     # 构造 nuitka 参数列表
     args = [
@@ -32,6 +31,7 @@ def main():
         "--remove-output",
         "--show-progress",
         "--show-memory",
+        "--jobs=6",
         f"--output-dir={output_dir}"
     ]
 

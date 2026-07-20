@@ -1,8 +1,10 @@
+from typing import TYPE_CHECKING
 import os
 import tempfile
 from pathlib import Path
 import dotenv
-from mitmproxy.http import HTTPFlow
+if TYPE_CHECKING:
+    from mitmproxy.http import HTTPFlow
 
 DEFAULT_CONFIG = """
 listen_port=8082 # 监听端口
@@ -45,7 +47,7 @@ LLM_FETCH_INTERVAL_S: float = float(os.getenv("llm_fetch_interval_s", "1.0"))
 MP_BIZ: str | None = os.getenv("mp_id", None)
 ARTICLE_LIST_URL: str | None = None
 ARTICLE_LIST_URL_TEMPLATE: str = "https://mp.weixin.qq.com/mp/profile_ext?action=home&__biz={biz}#wechat_redirect"
-TEMPLATE_FLOW: HTTPFlow | None = None
+TEMPLATE_FLOW: "HTTPFlow | None" = None
 
 TEMP_PATH = Path(tempfile.gettempdir()) / "xiaoxia_contribution_statistic_tool"
 TEMP_CONTEXT_DIR = TEMP_PATH / "temp_context"

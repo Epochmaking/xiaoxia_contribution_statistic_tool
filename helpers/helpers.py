@@ -1,7 +1,10 @@
+from typing import TYPE_CHECKING
+if TYPE_CHECKING:
+    from mitmproxy.http import HTTPFlow
+
 from datetime import datetime
 from urllib.parse import urlparse, parse_qs
 import requests
-from mitmproxy.http import HTTPFlow
 
 
 from constants import MAX_ARTICLE_COUNT_PER_REQUEST
@@ -97,7 +100,7 @@ def parse_article(article: dict) -> dict:
 
     return new_dict
 
-def get_reader_stats(content_url: str, template_flow: HTTPFlow) -> dict:
+def get_reader_stats(content_url: str, template_flow: "HTTPFlow") -> dict:
     """
     作用：
     1. 从公众号文末原文中提取读者统计信息
