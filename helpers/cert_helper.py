@@ -1,27 +1,40 @@
 import subprocess
 import ctypes
 import time
+import shutil
+from typing import TYPE_CHECKING
 from pathlib import Path
 from PySide6.QtWidgets import QMessageBox
+from mitmproxy.certs import CertStore
 
 from utils.logging import get_logger
 
+if TYPE_CHECKING:
+    from ui.ui_components import MainWindow
+
 logger = get_logger(__name__)
+
+CONF_DIR = Path.home() / ".mitmproxy"
+CERT_PATH = CONF_DIR / "mitmproxy-ca-cert.p12"
 
 SW_SHOWNORMAL = 1
 SEE_MASK_NOCLOSEPROCESS = 0x00000040
 INFINITE = -1
 
-CERT_PATH = Path("assets") / "mitmproxy-ca-cert.p12"
-
 def ensure_cert_status(main_window: "MainWindow"): # type: ignore
     """确保证书状态"""
     # 1.检查系统是否已有证书
     has_cert = _check_cert_status()
-    if not has_cert:
+    has_cert_file = CERT_PATH.exists()
+
+    if not has_cert or not has_cert_file:
         logger.info("系统未安装证书，开始安装")
         msg_box = QMessageBox(parent=main_window)
         try:
+            # 触发mitmproxy，生成%USERDATA%/.mitmproxy文件夹，.p12文件在这个文件夹下
+            _trigger_cert_generation()
+            if not CERT_PATH.exists():
+                raise RuntimeError("证书生成失败")
             _install_cert()
             has_cert = _check_cert_status()
             if not has_cert:
@@ -30,8 +43,24 @@ def ensure_cert_status(main_window: "MainWindow"): # type: ignore
             logger.error(f"安装证书失败: {e}")
             msg_box.critical(main_window,
                 "安装证书失败", f"请手动安装证书{CERT_PATH}至系统根证书存储中")
-            main_window.quit()
+            main_window.close()
 
+def _trigger_cert_generation() -> None:
+    """触发证书生成"""
+    logger.info("触发 mitmproxy 证书生成")
+
+    # 确保目录存在
+    CONF_DIR.mkdir(parents=True, exist_ok=True)
+
+    # 正确用法：from_store(目录路径, CA主文件名)
+    # 自动检测是否已有证书，没有则生成全套文件
+    _ = CertStore.from_store(
+        path=str(CONF_DIR),
+        basename="mitmproxy",
+        key_size=2048,
+    )
+
+    logger.info(f"证书生成完成: {CONF_DIR.resolve()}")
 
 def _check_cert_status() -> bool:
     """检查系统是否已有证书"""
@@ -217,6 +246,8 @@ def _install_cert() -> None:
         # 策略二：PowerShell + .NET X509Store（对 p12/pfx 最可靠，无需额外 Python 包）
         if _install_with_powershell(cert_path_str):
             return
+        # 三种方式都失败，拷贝cert到assets目录，手动安装
+        shutil.copy(CERT_PATH, Path("assets") / "mitmproxy-ca-cert.p12")
         raise RuntimeError("所有证书安装策略均失败")
 
     logger.info("当前未以管理员权限运行，将通过 UAC 申请管理员权限安装证书")

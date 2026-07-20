@@ -6,6 +6,8 @@ from utils.logging import get_logger
 
 logger = get_logger(__name__)
 
+FILE_VERSION = "0.2.0.0"
+PRODUCT_VERSION = "0.2.0.0"
 BROWSER_DIR = ".local-browsers=playwright\\driver\\package\\.local-browsers"
 ASSETS_DIR = "assets=assets"
 
@@ -15,7 +17,7 @@ def main():
     # 输出目录
     output_dir = os.path.join(root, "build")
     # 图标路径，不存在就自动移除该参数
-    ico_path = os.path.join(root, "None.ico")
+    ico_path = os.path.join(root, "xiaoxia.ico")
 
     # 构造 nuitka 参数列表
     args = [
@@ -26,6 +28,10 @@ def main():
         "--enable-plugin=playwright",
         f"--include-data-dir={BROWSER_DIR}",
         f"--include-data-dir={ASSETS_DIR}",
+        f"--file-version={FILE_VERSION}",
+        f"--product-version={PRODUCT_VERSION}",
+        "--product-name=Xiaoxia Contribution Statistic Tool",
+        "--copyright=ZajacHax 2026",
         "--deployment",
         "--lto=auto",
         "--remove-output",
