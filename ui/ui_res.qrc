@@ -3,4 +3,7 @@
     <file alias="checkmark_white">assets/checkmark-symbol-white.png</file>
     <file alias="step_1">assets/step_one_instruction.jpg</file>
   </qresource>
+  <qresource prefix="/icons">
+    <file alias="xiaoxia">../xiaoxia.ico</file>
+  </qresource>
 </RCC>

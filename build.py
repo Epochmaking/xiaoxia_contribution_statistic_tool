@@ -6,12 +6,14 @@ from utils.logging import get_logger
 
 logger = get_logger(__name__)
 
-FILE_VERSION = "0.2.0.0"
-PRODUCT_VERSION = "0.2.0.0"
-BROWSER_DIR = ".local-browsers=playwright\\driver\\package\\.local-browsers"
-ASSETS_DIR = "assets=assets"
+FILE_VERSION = "0.2.1.0"
+PRODUCT_VERSION = "0.2.1.0"
+BROWSER_DIR = ".dist\\.local-browsers=playwright\\driver\\package\\.local-browsers"
 
 def main():
+    """
+    主函数，用于执行打包操作。
+    """
     # 项目根目录
     root = os.path.abspath(".")
     # 输出目录
@@ -21,23 +23,21 @@ def main():
 
     # 构造 nuitka 参数列表
     args = [
-        sys.executable, "-m", "nuitka", "main.py",
+        sys.executable, "-m", "nuitka", "小夏推送统计工具.py",
         "--standalone",
         "--windows-console-mode=disable",
         "--enable-plugin=pyside6",
         "--enable-plugin=playwright",
         f"--include-data-dir={BROWSER_DIR}",
-        f"--include-data-dir={ASSETS_DIR}",
         f"--file-version={FILE_VERSION}",
         f"--product-version={PRODUCT_VERSION}",
         "--product-name=Xiaoxia Contribution Statistic Tool",
         "--copyright=ZajacHax 2026",
         "--deployment",
         "--lto=auto",
-        "--remove-output",
         "--show-progress",
         "--show-memory",
-        "--jobs=6",
+        "--jobs=10",
         f"--output-dir={output_dir}"
     ]
 

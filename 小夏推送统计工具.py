@@ -1,5 +1,7 @@
 import sys
+import ctypes
 from PySide6.QtWidgets import QApplication
+from PySide6.QtGui import QIcon
 
 from ui.ui_components import MainWindow
 from controllers.proxy import unset_network_proxy
@@ -11,6 +13,10 @@ app = None
 
 def main(argv: list[str]):
     """主函数"""
+    if sys.platform == "win32":
+        logger.info("设置应用用户模型ID为 com.xiaoxia.tool")
+        ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID("com.xiaoxia.tool")
+
     if not TEMP_PATH.exists():
         TEMP_PATH.mkdir(parents=True, exist_ok=True)
     if not TEMP_PATH.is_dir():
@@ -20,6 +26,8 @@ def main(argv: list[str]):
 
     global app # pylint: disable=global-statement
     app = QApplication(argv)
+    icon = QIcon(":/icons/xiaoxia.ico")
+    app.setWindowIcon(icon)
     main_window = MainWindow()
     main_window.show()
     sys.exit(app.exec())

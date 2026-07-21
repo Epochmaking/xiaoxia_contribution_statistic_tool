@@ -447,7 +447,11 @@
    <enum>Qt::ContextMenuPolicy::NoContextMenu</enum>
   </property>
   <property name="windowTitle">
-   <string>Form</string>
+   <string>小夏推送统计工具</string>
+  </property>
+  <property name="windowIcon">
+   <iconset resource="../ui_res.qrc">
+    <normaloff>:/icons/xiaoxia</normaloff>:/icons/xiaoxia</iconset>
   </property>
   <property name="windowOpacity">
    <double>1.000000000000000</double>

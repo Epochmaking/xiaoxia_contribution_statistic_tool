@@ -115,6 +115,9 @@ class Ui_MainForm(object):
 #endif
         MainForm.setPalette(palette)
         MainForm.setContextMenuPolicy(Qt.ContextMenuPolicy.NoContextMenu)
+        icon = QIcon()
+        icon.addFile(u":/icons/xiaoxia", QSize(), QIcon.Mode.Normal, QIcon.State.Off)
+        MainForm.setWindowIcon(icon)
         MainForm.setWindowOpacity(1.000000000000000)
         MainForm.setAutoFillBackground(False)
         MainForm.setStyleSheet(u"\n"
@@ -686,7 +689,7 @@ class Ui_MainForm(object):
     # setupUi
 
     def retranslateUi(self, MainForm):
-        MainForm.setWindowTitle(QCoreApplication.translate("MainForm", u"Form", None))
+        MainForm.setWindowTitle(QCoreApplication.translate("MainForm", u"\u5c0f\u590f\u63a8\u9001\u7edf\u8ba1\u5de5\u5177", None))
         self.main_title.setText(QCoreApplication.translate("MainForm", u"\u5c0f\u590f\u63a8\u9001\u7edf\u8ba1\u5de5\u5177", None))
         self.minimize_win_btn.setText(QCoreApplication.translate("MainForm", u"-", None))
         self.close_win_btn.setText(QCoreApplication.translate("MainForm", u"\u00d7", None))

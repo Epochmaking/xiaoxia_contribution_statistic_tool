@@ -7,6 +7,7 @@ if TYPE_CHECKING:
     from mitmproxy.http import HTTPFlow
 
 DEFAULT_CONFIG = """
+# 提示：如需修改配置，修改完之后请保存文件并重新启动本软件
 listen_port=8082 # 监听端口
 max_article_count_per_request=10 # 每次请求的文章数量，最大10，推荐保持默认
 max_timeout_s=6 # 最大超时时间，单位秒

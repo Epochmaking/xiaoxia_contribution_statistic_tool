@@ -1,3 +1,4 @@
+import os
 import subprocess
 import ctypes
 import time
@@ -95,7 +96,7 @@ def _check_cert_status() -> bool:
             return True
         logger.info("证书验证失败，未在系统根证书存储中找到，开始安装")
         return False
-    except Exception as e:
+    except Exception as e: # pylint: disable=broad-exception-caught
         logger.warning("检查证书状态时发生异常: %s", e)
         return False
 
@@ -240,13 +241,16 @@ def _install_cert() -> None:
     cert_path_str = str(CERT_PATH.resolve())
 
     if _is_admin():
-        # 策略一：certutil（传统方式，速度快但对 p12 支持不稳定）
-        if _install_with_certutil(cert_path_str):
-            return
-        # 策略二：PowerShell + .NET X509Store（对 p12/pfx 最可靠，无需额外 Python 包）
+        # 策略一：PowerShell + .NET X509Store（对 p12/pfx 最可靠，无需额外 Python 包）
         if _install_with_powershell(cert_path_str):
             return
+        # 策略二：certutil（传统方式，速度快但对 p12 支持不稳定）
+        if _install_with_certutil(cert_path_str):
+            return
         # 三种方式都失败，拷贝cert到assets目录，手动安装
+        logger.warning("所有证书安装策略均失败，将尝试手动安装证书")
+        # 确保assets目录存在
+        os.makedirs(Path("assets"), exist_ok=True)
         shutil.copy(CERT_PATH, Path("assets") / "mitmproxy-ca-cert.p12")
         raise RuntimeError("所有证书安装策略均失败")
 
