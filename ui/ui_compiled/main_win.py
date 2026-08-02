@@ -158,7 +158,29 @@ class Ui_MainForm(object):
         self.horizontalLayout_2 = QHBoxLayout(self.title_bar)
         self.horizontalLayout_2.setSpacing(5)
         self.horizontalLayout_2.setObjectName(u"horizontalLayout_2")
-        self.horizontalLayout_2.setContentsMargins(5, 0, 10, 0)
+        self.horizontalLayout_2.setContentsMargins(10, 0, 10, 0)
+        self.setting_btn = QPushButton(self.title_bar)
+        self.setting_btn.setObjectName(u"setting_btn")
+        sizePolicy2 = QSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
+        sizePolicy2.setHorizontalStretch(0)
+        sizePolicy2.setVerticalStretch(0)
+        sizePolicy2.setHeightForWidth(self.setting_btn.sizePolicy().hasHeightForWidth())
+        self.setting_btn.setSizePolicy(sizePolicy2)
+        self.setting_btn.setMaximumSize(QSize(50, 16777215))
+        self.setting_btn.setCursor(QCursor(Qt.CursorShape.PointingHandCursor))
+        self.setting_btn.setStyleSheet(u"QPushButton::icon {\n"
+"	color: rgb(255, 255, 255);\n"
+"}")
+        icon1 = QIcon()
+        icon1.addFile(u":/images/setting_white", QSize(), QIcon.Mode.Normal, QIcon.State.Off)
+        self.setting_btn.setIcon(icon1)
+
+        self.horizontalLayout_2.addWidget(self.setting_btn)
+
+        self.horizontalSpacer_8 = QSpacerItem(40, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
+
+        self.horizontalLayout_2.addItem(self.horizontalSpacer_8)
+
         self.main_title = QLabel(self.title_bar)
         self.main_title.setObjectName(u"main_title")
         font = QFont()
@@ -166,15 +188,16 @@ class Ui_MainForm(object):
         font.setBold(True)
         self.main_title.setFont(font)
         self.main_title.setStyleSheet(u"color: rgb(255, 255, 255)")
-        self.main_title.setIndent(70)
+        self.main_title.setIndent(0)
 
         self.horizontalLayout_2.addWidget(self.main_title, 0, Qt.AlignmentFlag.AlignHCenter)
 
+        self.horizontalSpacer_7 = QSpacerItem(40, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
+
+        self.horizontalLayout_2.addItem(self.horizontalSpacer_7)
+
         self.minimize_win_btn = QPushButton(self.title_bar)
         self.minimize_win_btn.setObjectName(u"minimize_win_btn")
-        sizePolicy2 = QSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
-        sizePolicy2.setHorizontalStretch(0)
-        sizePolicy2.setVerticalStretch(0)
         sizePolicy2.setHeightForWidth(self.minimize_win_btn.sizePolicy().hasHeightForWidth())
         self.minimize_win_btn.setSizePolicy(sizePolicy2)
         self.minimize_win_btn.setMaximumSize(QSize(20, 16777215))
@@ -191,7 +214,7 @@ class Ui_MainForm(object):
         self.close_win_btn.setFont(font)
         self.close_win_btn.setAutoFillBackground(False)
 
-        self.horizontalLayout_2.addWidget(self.close_win_btn)
+        self.horizontalLayout_2.addWidget(self.close_win_btn, 0, Qt.AlignmentFlag.AlignHCenter)
 
 
         self.verticalLayout.addWidget(self.title_bar)
@@ -624,6 +647,7 @@ class Ui_MainForm(object):
 
         self.article_confirm_table = QTableView(self.page_4)
         self.article_confirm_table.setObjectName(u"article_confirm_table")
+        self.article_confirm_table.viewport().setProperty(u"cursor", QCursor(Qt.CursorShape.PointingHandCursor))
 
         self.verticalLayout_5.addWidget(self.article_confirm_table)
 
@@ -682,7 +706,7 @@ class Ui_MainForm(object):
 
         self.retranslateUi(MainForm)
 
-        self.stackedWidget.setCurrentIndex(3)
+        self.stackedWidget.setCurrentIndex(0)
 
 
         QMetaObject.connectSlotsByName(MainForm)
@@ -690,6 +714,7 @@ class Ui_MainForm(object):
 
     def retranslateUi(self, MainForm):
         MainForm.setWindowTitle(QCoreApplication.translate("MainForm", u"\u5c0f\u590f\u63a8\u9001\u7edf\u8ba1\u5de5\u5177", None))
+        self.setting_btn.setText(QCoreApplication.translate("MainForm", u"\u8bbe\u7f6e", None))
         self.main_title.setText(QCoreApplication.translate("MainForm", u"\u5c0f\u590f\u63a8\u9001\u7edf\u8ba1\u5de5\u5177", None))
         self.minimize_win_btn.setText(QCoreApplication.translate("MainForm", u"-", None))
         self.close_win_btn.setText(QCoreApplication.translate("MainForm", u"\u00d7", None))

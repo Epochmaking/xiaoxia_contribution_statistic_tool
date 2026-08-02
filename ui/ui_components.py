@@ -36,6 +36,7 @@ class MainWindow(QWidget, Ui_MainForm):
         self.step_two_btn_connection = self.step_two_btn.clicked.connect(self.step_two_btn_on_click)
         self.export_file_btn_connection = self.export_file_btn.clicked.connect(self.export_file_btn_on_click)
         self.reget_biz_btn_connection = self.reget_biz_btn.clicked.connect(self.reget_biz_btn_on_click)
+        self.setting_btn_connection = self.setting_btn.clicked.connect(self.setting_btn_on_click)
 
         # 初始化显示已获取的BIZ
         if consts.MP_BIZ:
@@ -407,3 +408,8 @@ class MainWindow(QWidget, Ui_MainForm):
 
         # 打开文件夹
         os.startfile(folder_path)
+
+    def setting_btn_on_click(self):
+        """设置按钮点击事件"""
+        logger.info("打开设置")
+        os.startfile(consts.CONFIG_FILE)

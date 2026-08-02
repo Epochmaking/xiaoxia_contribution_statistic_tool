@@ -3,11 +3,12 @@ import os
 import tempfile
 from pathlib import Path
 import dotenv
+from helpers.config_helper import read_xiaoxia_members
 if TYPE_CHECKING:
     from mitmproxy.http import HTTPFlow
 
-DEFAULT_CONFIG = """
-# 提示：如需修改配置，修改完之后请保存文件并重新启动本软件
+DEFAULT_CONFIG = """# 提示：如需修改配置，修改完之后请保存文件并重新启动本软件
+
 listen_port=8082 # 监听端口
 max_article_count_per_request=10 # 每次请求的文章数量，最大10，推荐保持默认
 max_timeout_s=6 # 最大超时时间，单位秒
@@ -19,6 +20,8 @@ llm_fetch_interval_s=0.5 # 每次语言模型调用请求间隔，单位秒
 glm_api_key='00ebdd968b7742babfa0a6e04b33a0e4.ZrdN0x9z5M5dbNsq' # GLM API密钥
 glm_model='glm-4.7' # 首选glm-4.7模型
 glm_backup_model='glm-5' # 备选模型glm-5
+
+xiaoxia_members=None # 小夏成员名单，成员间用逗号隔开不要换行，如为空则默认所有人都是小夏
 """
 
 CONFIG_FILE = "xiaoxia_tool_config.ini"
@@ -44,6 +47,7 @@ LLM_MODEL: str | None = os.getenv("glm_model", "glm-4.7-flash")
 LLM_BACKUP_MODEL: str | None = os.getenv("glm_backup_model", "")
 LLM_FETCH_INTERVAL_S: float = float(os.getenv("llm_fetch_interval_s", "1.0"))
 
+XIAOXIA_MEMBERS: list[str] | None = read_xiaoxia_members()
 
 MP_BIZ: str | None = os.getenv("mp_id", None)
 ARTICLE_LIST_URL: str | None = None
@@ -56,6 +60,7 @@ TEMP_DB_PATH = TEMP_PATH / "temp_db.db"
 
 
 __all__ = [
+    "CONFIG_FILE",
     "LISTEN_PORT",
     "MP_BIZ",
     "ARTICLE_LIST_URL",
