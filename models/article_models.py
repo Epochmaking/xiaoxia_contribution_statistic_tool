@@ -1,4 +1,4 @@
-from sqlalchemy import Integer, String, DateTime
+from sqlalchemy import Integer, String, DateTime, Boolean
 from sqlalchemy.orm import Mapped, mapped_column
 
 from models.base_model import Base
@@ -23,3 +23,23 @@ class Article(Base):
     heart_count: Mapped[int] = mapped_column(Integer, nullable=True, default=None)
     share_count: Mapped[int] = mapped_column(Integer, nullable=True, default=None)
     collect_count: Mapped[int] = mapped_column(Integer, nullable=True, default=None)
+
+class Creator(Base):
+    """
+    作者模型
+    """
+    __tablename__ = 'creators'
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
+    name: Mapped[str] = mapped_column(String(64), index=True)
+    is_xiaoxia: Mapped[bool] = mapped_column(Boolean, index=True)
+    fee: Mapped[int] = mapped_column(Integer, nullable=True, default=None)
+
+class ArticleCreatorLink(Base):
+    """
+    文章作者关联模型
+    """
+    __tablename__ = 'article_creator_links'
+
+    article_id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
+    creator_id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)

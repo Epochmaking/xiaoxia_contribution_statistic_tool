@@ -7,6 +7,7 @@ from PySide6.QtCore import Qt, QDate
 from ui.ui_compiled.main_win import Ui_MainForm
 from ui.ui_helper import set_article_confirm_table
 from controllers.threads import GetMpBizThread, GetArticleListThread, GetArticleContentThread
+from controllers.analyse import calculate_fee
 from controllers.export import export_to_file
 from helpers.config_helper import write_config, del_config, read_config
 from helpers.cert_helper import ensure_cert_status
@@ -381,7 +382,7 @@ class MainWindow(QWidget, Ui_MainForm):
         logger.info("导出文件")
         if self.to_calc_fee.isChecked():
             # 先计算稿费
-            ...
+            calculate_fee()
 
         # 读取上次选择的导出目录，作为文件夹选择器的初始目录
         last_export_dir = read_config("last_export_dir", "") or ""
