@@ -1,14 +1,11 @@
 import sys
 import os
-
-import json
 import time
 import re
 import threading
 from playwright.sync_api import sync_playwright, Page
 from PySide6.QtCore import QObject, Signal, Qt
 
-from database.db import get_session
 from llm.llm_parse import parse_creator_list_by_llm, format_creator_list_by_llm
 from helpers.helpers import get_reader_stats
 from models.article_models import Article
@@ -203,17 +200,25 @@ class ContentCrawler:
         # 正常文章页面
         return False
 
-    def parse_article_data(self, page: Page, to_calc_fee: bool):
-        """页面解析逻辑：提取落款、阅读量等信息"""
-        # 获取页面全部纯文本
+    def extract_raw_page_data(self, page: Page) -> tuple[str, dict]:
+        """
+        仅从页面提取原始数据，不调用LLM（用于流水线模式）。
+        返回: (crop_text, reader_stats)
+          - crop_text: 文末300字符原始文本
+          - reader_stats: 阅读/点赞等统计数据字典
+        """
         full_text = page.evaluate("() => document.body.innerText")
-        crop_text = full_text[-300:] # 取最后300个字符
-        creator_list = parse_creator_list_by_llm(crop_text)
-        formatted_creator_list = format_creator_list_by_llm(creator_list) if to_calc_fee else {}
+        crop_text = full_text[-300:]
+        reader_stats = {}
         if consts.TEMPLATE_FLOW is not None:
             reader_stats = get_reader_stats(page.url, consts.TEMPLATE_FLOW)
-        else:
-            reader_stats = {}
+        return crop_text, reader_stats
+
+    def parse_article_data(self, page: Page, to_calc_fee: bool):
+        """页面解析逻辑：提取落款、阅读量等信息（保留用于兼容旧逻辑）"""
+        crop_text, reader_stats = self.extract_raw_page_data(page)
+        creator_list = parse_creator_list_by_llm(crop_text)
+        formatted_creator_list = format_creator_list_by_llm(creator_list) if to_calc_fee else {}
         return {
             "view_count": reader_stats.get("view_count", 0), # 阅读量
             "heart_count": reader_stats.get("heart_count", 0), # 爱心量
@@ -224,148 +229,145 @@ class ContentCrawler:
             "formatted_creator_list": formatted_creator_list,
         }
     
-    def crawl_all_articles(self, to_calc_fee: bool):
+    def crawl_pages_for_pipeline(self, article_list: list[Article], raw_queue, stop_flag, progress_cb, verify_cb, log_cb):
         """
-        主爬取逻辑，运行在QThread内部。
-        流程改进：
-          - 默认保持浏览器窗口后台静默（窗口移至屏幕外）
-          - 仅在触发人机验证时将窗口移回屏幕可见区域
-          - 用户完成验证后立即再次隐藏窗口
-          - 全程复用同一个 browser + context，保证 Cookie / 会话一致性
+        【流水线模式 Stage 1】仅负责浏览器页面爬取（单线程防反爬）。
+        对每篇文章：
+          1. 访问URL → 人机验证处理
+          2. 提取文末300字符 crop_text + reader_stats
+          3. 将 (article_id, title, crop_text, reader_stats, to_calc_fee_flag) 放入 raw_queue
+        完成所有文章后向 raw_queue 放入 None 作为结束标志。
+
+        :param article_list: 数据库 Article 对象列表
+        :param raw_queue: queue.Queue，用于向 Stage2 输送原始页面数据
+        :param stop_flag: threading.Event，外部请求停止时置位
+        :param progress_cb: callable(idx, total, msg) 进度回调
+        :param verify_cb: callable() 需要用户验证时的回调
+        :param log_cb: callable(msg) 日志回调
         """
-        # TODO: 多线程并行处理，提高效率
         page = None
         try:
-            # 1. 单独读取数据库，快速释放db会话，不长期占用
-            with get_session() as db_session:
-                article_list = db_session.query(Article).all()
-            if not article_list:
-                self.signals.log_msg.emit("数据库无待爬取文章")
-                self.signals.task_over.emit(True)
-                return
-
-            # 2. 初始化浏览器（始终 headed 启动，启动时窗口即位于屏幕外）
             self.init_browser()
-
             if not self.context:
-                self.signals.log_msg.emit("browser init failed")
-                self.signals.task_over.emit(False)
                 logger.error("浏览器初始化失败")
-                return
+                log_cb("browser init failed")
+                raw_queue.put(None)
+                return False
 
             page = self.context.new_page()
-
-            # 3. 循环遍历所有文章URL
             total_count = len(article_list)
+
             for idx, article in enumerate(article_list, start=1):
+                if stop_flag.is_set():
+                    logger.info(f"收到停止信号，终止浏览器爬取，当前进度 {idx}/{total_count}")
+                    break
+
                 url = article.content_url
                 if not url:
                     logger.error(f"文章《{article.title}》URL记录不完整。ID:{article.id}")
-                    self.signals.log_msg.emit(f"URL记录不完整。ID:{article.id}，标题：{article.title}")
-                    self.signals.task_over.emit(False)
-                    return
+                    log_cb(f"URL记录不完整。ID:{article.id}，标题：{article.title}")
+                    # 即使URL无效，也向队列塞一条空数据占位，保证各阶段计步一致
+                    raw_queue.put({
+                        "article_id": article.id,
+                        "title": article.title,
+                        "crop_text": "",
+                        "reader_stats": {},
+                        "skip": True,
+                        "skip_reason": "URL无效",
+                    })
+                    continue
 
-                self.signals.progress_update.emit(
-                    idx, total_count, f"正在访问 {idx}/{total_count}：《{article.title}》"
-                )
+                progress_cb(idx, total_count, f"[浏览器] 正在访问 {idx}/{total_count}：《{article.title}》")
 
+                load_ok = False
                 for i in range(MAX_RETRIES):
+                    if stop_flag.is_set():
+                        break
                     try:
                         page.goto(url, wait_until="domcontentloaded")
+                        load_ok = True
                         break
                     except Exception as e: # pylint: disable=broad-exception-caught
                         logger.error(f"第{i}次尝试，文章《{article.title}》内容加载失败: {str(e)}")
-                        if i < MAX_RETRIES - 1:
-                            continue
-                        else:
-                            logger.error(f"文章《{article.title}》内容加载失败: {str(e)}")
-                            self.signals.log_msg.emit(f"读取文章《{article.title}》内容失败，请检查网络连接")
-                            self.signals.task_over.emit(False)
-                            return
-                    finally:
                         time.sleep(FETCH_INTERVAL_S)
-
-                # 检测验证页面 —— 不销毁 browser/context，只切换窗口可见性
-                # 循环验证：用户验证完再检查跳转后的页面是否仍是验证页，是则继续提示
-                while self.is_verify_page(page):
-                    logger.info(f"检测到人机验证, 文章《{article.title}》")
-                    self.signals.log_msg.emit("检测到人机验证，请在浏览器窗口完成验证...")
-                    # 将当前 page 标记为"验证页"，供 CDP 操作窗口使用
-                    self._ensure_verify_page(page)
-                    # 窗口移回可见区域
-                    self._set_window_visible(True, page=page)
-                    self.signals.need_user_verify.emit()
-                    # 阻塞等待用户操作完成：GUI 层关闭 msgbox 后回传 verify_done 信号
-                    # 方案A（GUI交互推荐）：Qt信号等待 + threading.Event 跨线程安全唤醒
-                    logger.info("爬虫线程进入等待用户验证阻塞...")
-                    verify_ok = self.wait_for_user_verify()
-                    logger.info(f"爬虫线程已被唤醒，验证结果: {verify_ok}")
-
-                    # 验证后等待页面跳转，再检查是否仍停留在验证页
-                    page.wait_for_timeout(1500)
-
-                    # 若用户取消验证，则跳出循环，由上层解析失败逻辑处理
-                    if not verify_ok:
-                        logger.warning(f"用户取消验证，文章《{article.title}》")
-                        self.signals.log_msg.emit("用户取消验证，跳过当前文章")
-                        break
-
-                    # 再次检查页面是否已离开验证页，否则继续循环提示
-                    if self.is_verify_page(page):
-                        logger.info(f"验证后页面仍为人机验证页，再次提示用户, 文章《{article.title}》")
-                        self.signals.log_msg.emit("验证未完成，请继续在浏览器窗口完成验证...")
                         continue
+                time.sleep(FETCH_INTERVAL_S)
 
-                    # 已成功离开验证页
-                    break
-
-                # 验证流程结束后，把窗口重新隐藏
-                self._set_window_visible(False, page=page)
-
-                # 解析文章数据
-                data = self.parse_article_data(page, to_calc_fee)
-                if not data:
-                    logger.error(f"{url} 解析数据为空")
-                    self.signals.log_msg.emit(f"{url} 解析数据为空")
+                if not load_ok:
+                    logger.error(f"文章《{article.title}》内容加载失败，跳过")
+                    log_cb(f"读取文章《{article.title}》内容失败，跳过")
+                    raw_queue.put({
+                        "article_id": article.id,
+                        "title": article.title,
+                        "crop_text": "",
+                        "reader_stats": {},
+                        "skip": True,
+                        "skip_reason": "页面加载失败",
+                    })
                     continue
 
-                # 写入数据库：单独开db会话，避免长连接
-                with get_session() as db_session:
-                    target = db_session.query(Article).filter(Article.id == article.id).first()
-                    if target:
-                        target.view_count = data.get("view_count", 0)
-                        target.heart_count = data.get("heart_count", 0)
-                        target.like_count = data.get("like_count", 0)
-                        target.share_count = data.get("share_count", 0)
-                        target.collect_count = data.get("collect_count", 0)
-                        target.creators_list = data.get("creator_list", "")
-                        target.formatted_creators_list = json.dumps(data.get("formatted_creator_list", {}), ensure_ascii=False)
-                        db_session.commit()
-                        logger.info(
-                            f"更新成功 ID:{article.id}, 题目：《{article.title}》\n"
-                            f"阅读：{data.get('view_count', 0)}, 爱心：{data.get('heart_count', 0)}, 点赞：{data.get('like_count', 0)}, 分享：{data.get('share_count', 0)}, 收藏：{data.get('collect_count', 0)}\n"
-                            f"落款信息：\n{data.get('creator_list', '')}\n格式化作者列表：\n{data.get('formatted_creator_list', {})}"
-                        )
-                        self.signals.log_msg.emit(f"更新成功 ID:{article.id}")
-                        self.signals.progress_update.emit(
-                            idx, total_count,
-                            f"已完成 {idx}/{total_count}：《{article.title}》 - 阅读:{data.get('view_count', 0)}"
-                        )
-                    else:
-                        logger.warning(f"数据库中未找到 ID={article.id} 的文章，跳过写入")
-                        self.signals.progress_update.emit(
-                            idx, total_count,
-                            f"已跳过 {idx}/{total_count}：《{article.title}》（数据库中未找到）"
-                        )
+                # --- 人机验证处理循环 ---
+                verify_skip = False
+                while self.is_verify_page(page):
+                    if stop_flag.is_set():
+                        verify_skip = True
+                        break
+                    logger.info(f"检测到人机验证, 文章《{article.title}》")
+                    log_cb("检测到人机验证，请在浏览器窗口完成验证...")
+                    self._ensure_verify_page(page)
+                    self._set_window_visible(True, page=page)
+                    verify_cb()  # 触发GUI提示
+                    verify_ok = self.wait_for_user_verify()
+                    page.wait_for_timeout(1500)
+                    if not verify_ok:
+                        logger.warning(f"用户取消验证，文章《{article.title}》")
+                        log_cb("用户取消验证，跳过当前文章")
+                        verify_skip = True
+                        break
+                    if self.is_verify_page(page):
+                        continue
+                    break
 
-            logger.info("全部文章爬取完成")
-            self.signals.log_msg.emit("全部文章爬取完成")
-            self.signals.task_over.emit(True)
+                self._set_window_visible(False, page=page)
+
+                if verify_skip or stop_flag.is_set():
+                    raw_queue.put({
+                        "article_id": article.id,
+                        "title": article.title,
+                        "crop_text": "",
+                        "reader_stats": {},
+                        "skip": True,
+                        "skip_reason": "验证跳过/停止信号",
+                    })
+                    if stop_flag.is_set():
+                        break
+                    continue
+
+                # 提取原始数据（不调用LLM）
+                try:
+                    crop_text, reader_stats = self.extract_raw_page_data(page)
+                except Exception as ex: # pylint: disable=broad-exception-caught
+                    logger.warning(f"提取页面原始数据失败，文章《{article.title}》: {ex}")
+                    crop_text, reader_stats = "", {}
+
+                raw_queue.put({
+                    "article_id": article.id,
+                    "title": article.title,
+                    "crop_text": crop_text,
+                    "reader_stats": reader_stats,
+                    "skip": False,
+                })
+
+            # 流水线Stage1结束标记：所有Stage2 worker共享同一个None哨兵数量应等于worker数，
+            # 具体由外部threads控制者put多个None，这里不再额外放哨兵
+            logger.info(f"浏览器爬取阶段结束，共处理 {idx if 'idx' in dir() else 0}/{total_count}") # type: ignore # pylint: disable=undefined-loop-variable
+            return True
 
         except Exception as err: # pylint: disable=broad-exception-caught
-            logger.error(f"爬取任务异常终止：{str(err)}")
-            self.signals.log_msg.emit(f"爬取任务异常终止：{str(err)}")
-            self.signals.task_over.emit(False)
+            logger.error(f"浏览器爬取阶段异常：{str(err)}")
+            log_cb(f"浏览器爬取阶段异常：{str(err)}")
+            return False
         finally:
-            # 无论成功失败，强制关闭浏览器
-            self.close_all_resource()
+            # 资源由外部 threads.stop() 统一释放
+            pass
+
