@@ -9,23 +9,27 @@ if TYPE_CHECKING:
 
 DEFAULT_CONFIG = """# 提示：如需修改配置，修改完之后请保存文件并重新启动本软件
 
-listen_port=8082 # 监听端口
-max_article_count_per_request=10 # 每次请求的文章数量，最大10，推荐保持默认
-max_timeout_s=6 # 最大超时时间，单位秒
-max_retries=3 # 最大重试次数
-fetch_interval_s=2 # 每次请求间隔，单位秒，不要调太低防止被微信反爬虫拦截封禁
+listen_port=8082 # 监听端口\n
+max_article_count_per_request=10 # 每次请求的文章数量，最大10，推荐保持默认\n
+max_timeout_s=6 # 最大超时时间，单位秒\n
+max_retries=3 # 最大重试次数\n
+fetch_interval_s=2 # 每次请求间隔，单位秒，不要调太低防止被微信反爬虫拦截封禁\n
 
-max_llm_retries=99 # 最大语言模型重试次数（用于识别落款信息）
-llm_fetch_interval_s=1.5 # 每次语言模型调用请求间隔，单位秒
-glm_api_key='00ebdd968b7742babfa0a6e04b33a0e4.ZrdN0x9z5M5dbNsq' # GLM API密钥
-glm_model='glm-4.7' # 首选glm-4.7模型
-glm_backup_model='glm-5' # 备选模型glm-5
+max_llm_retries=99 # 最大语言模型重试次数（用于识别落款信息）\n
+llm_fetch_interval_s=1.5 # 每次语言模型调用请求间隔，单位秒\n
+glm_api_key='00ebdd968b7742babfa0a6e04b33a0e4.ZrdN0x9z5M5dbNsq' # GLM API密钥\n
+glm_model='glm-4.7' # 首选glm-4.7模型\n
+glm_backup_model='glm-5' # 备选模型glm-5\n
 
-xiaoxia_members=None # 小夏成员名单，成员间用逗号隔开不要换行，如为空则默认所有人都是小夏
-fee_base=100 # 稿费基数，单位元
+xiaoxia_members=None # 小夏成员名单，成员间用逗号隔开不要换行，如为空则默认所有人都是小夏\n
+fee_base=100 # 稿费基数，单位元\n
 """
 
-CONFIG_FILE = "xiaoxia_tool_config.ini"
+TEMP_PATH = Path(tempfile.gettempdir()) / "xiaoxia_contribution_statistic_tool"
+TEMP_CONTEXT_DIR = TEMP_PATH / "temp_context"
+TEMP_DB_PATH = TEMP_PATH / "temp_db.db"
+
+CONFIG_FILE = TEMP_PATH / "xiaoxia_tool_config.ini"
 
 # 若不存在文件，创建默认文件
 if not os.path.exists(CONFIG_FILE):
@@ -55,10 +59,6 @@ MP_BIZ: str | None = os.getenv("mp_id", None)
 ARTICLE_LIST_URL: str | None = None
 ARTICLE_LIST_URL_TEMPLATE: str = "https://mp.weixin.qq.com/mp/profile_ext?action=home&__biz={biz}#wechat_redirect"
 TEMPLATE_FLOW: "HTTPFlow | None" = None
-
-TEMP_PATH = Path(tempfile.gettempdir()) / "xiaoxia_contribution_statistic_tool"
-TEMP_CONTEXT_DIR = TEMP_PATH / "temp_context"
-TEMP_DB_PATH = TEMP_PATH / "temp_db.db"
 
 
 __all__ = [

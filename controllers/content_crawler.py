@@ -57,6 +57,7 @@ class ContentCrawler:
         self._verify_page = None    # 用于人机验证的独立页面
         self._is_visible = False    # 当前浏览器窗口是否可见（面向用户）
         self._verify_evt = threading.Event()  # GUI 阻塞等待事件
+        self._playwright_owner_thread_id = None  # 记录创建 Playwright 的线程 ID
         # 注意：信号在GUI线程发射后，若使用 QueuedConnection，槽函数会在爬虫线程执行；
         # 但爬虫线程当前正被 wait() 阻塞，无法派发自己的事件循环，
         # 因此此处用 DirectConnection 在发射者线程（GUI）直接执行 _on_verify_done，
@@ -96,6 +97,7 @@ class ContentCrawler:
     def init_playwright(self):
         """初始化Playwright"""
         self.playwright = sync_playwright().start()
+        self._playwright_owner_thread_id = threading.get_ident()
 
     def init_browser(self):
         """
@@ -176,10 +178,31 @@ class ContentCrawler:
                 target_page.bring_to_front()
 
     def close_all_resource(self):
-        """统一释放浏览器资源"""
-        if self.playwright:
-            self.playwright.stop()
-        self.context = None
+        """统一释放浏览器资源。注意：Playwright 必须在创建它的同一个线程中 stop，否则会触发 greenlet 跨线程错误。"""
+        current_tid = threading.get_ident()
+        owner_tid = self._playwright_owner_thread_id
+        try:
+            if self.context:
+                try:
+                    self.context.close()
+                except Exception:  # pylint: disable=broad-exception-caught
+                    pass
+                self.context = None
+            if self.playwright:
+                if owner_tid is None or current_tid == owner_tid:
+                    self.playwright.stop()
+                else:
+                    logger.warning(
+                        f"close_all_resource 在非创建线程调用(当前tid={current_tid}, owner_tid={owner_tid})，"
+                        "已关闭context，Playwright实例将交由GC回收或由owner线程自行清理"
+                    )
+                self.playwright = None
+                self._playwright_owner_thread_id = None
+        except Exception as err:  # pylint: disable=broad-exception-caught
+            logger.warning(f"close_all_resource 释放资源时发生异常(已忽略): {err}")
+            self.playwright = None
+            self.context = None
+            self._playwright_owner_thread_id = None
 
     def is_verify_page(self, page: Page) -> bool:
         """
@@ -370,4 +393,3 @@ class ContentCrawler:
         finally:
             # 资源由外部 threads.stop() 统一释放
             pass
-

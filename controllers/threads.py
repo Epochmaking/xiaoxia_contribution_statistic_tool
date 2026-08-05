@@ -372,6 +372,12 @@ class GetArticleContentThread(QThread):
         except Exception as ex:  # pylint: disable=broad-exception-caught
             logger.error(f"浏览器阶段异常: {ex}")
             self._any_stage_failed = True
+        finally:
+            if self.crawler:
+                try:
+                    self.crawler.close_all_resource()
+                except Exception:  # pylint: disable=broad-exception-caught
+                    pass
 
     # ------------------------------------------------------------
     #  主入口
@@ -486,6 +492,7 @@ class GetArticleContentThread(QThread):
                 except Exception:  # pylint: disable=broad-exception-caught
                     pass
                 self.crawler.close_all_resource()
+                self.wait()
         finally:
             self.crawler = None
 

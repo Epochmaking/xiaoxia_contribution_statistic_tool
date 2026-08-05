@@ -1,0 +1,560 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>Form</class>
+ <widget class="QWidget" name="Form">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>666</width>
+    <height>584</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>设置</string>
+  </property>
+  <property name="windowIcon">
+   <iconset resource="../ui_res.qrc">
+    <normaloff>:/icons/xiaoxia</normaloff>:/icons/xiaoxia</iconset>
+  </property>
+  <property name="styleSheet">
+   <string notr="true">border: none;</string>
+  </property>
+  <layout class="QVBoxLayout" name="verticalLayout">
+   <item>
+    <widget class="QFrame" name="setting_frame">
+     <property name="autoFillBackground">
+      <bool>false</bool>
+     </property>
+     <property name="styleSheet">
+      <string notr="true">QFrame {
+	background-color: rgb(85, 85, 85);
+	border-radius: 15px;
+}</string>
+     </property>
+     <property name="frameShape">
+      <enum>QFrame::Shape::StyledPanel</enum>
+     </property>
+     <property name="frameShadow">
+      <enum>QFrame::Shadow::Raised</enum>
+     </property>
+     <layout class="QVBoxLayout" name="verticalLayout_4">
+      <property name="spacing">
+       <number>0</number>
+      </property>
+      <property name="leftMargin">
+       <number>0</number>
+      </property>
+      <property name="topMargin">
+       <number>0</number>
+      </property>
+      <property name="rightMargin">
+       <number>0</number>
+      </property>
+      <property name="bottomMargin">
+       <number>0</number>
+      </property>
+      <item>
+       <widget class="QWidget" name="widget" native="true">
+        <property name="styleSheet">
+         <string notr="true">QLineEdit {
+    border: 1px solid #888888;
+    border-radius: 8px;
+    background-color: #ffffff;
+    padding: 1px;
+    font-size: 14px;
+}
+
+QLabel {
+	font-size: 16px;
+	color: rgb(255, 255, 255);
+}</string>
+        </property>
+        <layout class="QVBoxLayout" name="verticalLayout_2">
+         <item>
+          <widget class="QWidget" name="title_bar" native="true">
+           <property name="maximumSize">
+            <size>
+             <width>16777215</width>
+             <height>40</height>
+            </size>
+           </property>
+           <layout class="QHBoxLayout" name="horizontalLayout_13">
+            <property name="topMargin">
+             <number>9</number>
+            </property>
+            <property name="bottomMargin">
+             <number>0</number>
+            </property>
+            <item alignment="Qt::AlignmentFlag::AlignHCenter">
+             <widget class="QLabel" name="label_14">
+              <property name="sizePolicy">
+               <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
+                <horstretch>0</horstretch>
+                <verstretch>0</verstretch>
+               </sizepolicy>
+              </property>
+              <property name="maximumSize">
+               <size>
+                <width>16777215</width>
+                <height>40</height>
+               </size>
+              </property>
+              <property name="font">
+               <font>
+                <pointsize>-1</pointsize>
+               </font>
+              </property>
+              <property name="styleSheet">
+               <string notr="true">color: rgb(255, 255, 255)</string>
+              </property>
+              <property name="text">
+               <string>设置</string>
+              </property>
+             </widget>
+            </item>
+           </layout>
+          </widget>
+         </item>
+         <item>
+          <widget class="QWidget" name="widget_2" native="true">
+           <property name="styleSheet">
+            <string notr="true"/>
+           </property>
+           <layout class="QGridLayout" name="gridLayout">
+            <property name="leftMargin">
+             <number>15</number>
+            </property>
+            <property name="rightMargin">
+             <number>15</number>
+            </property>
+            <property name="horizontalSpacing">
+             <number>30</number>
+            </property>
+            <property name="verticalSpacing">
+             <number>20</number>
+            </property>
+            <item row="4" column="1">
+             <layout class="QHBoxLayout" name="horizontalLayout_10">
+              <item>
+               <widget class="QLabel" name="label_11">
+                <property name="text">
+                 <string>备选大语言模型</string>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QLineEdit" name="glm_backup_model">
+                <property name="maximumSize">
+                 <size>
+                  <width>100</width>
+                  <height>30</height>
+                 </size>
+                </property>
+                <property name="toolTip">
+                 <string>智谱清言备选大语言模型</string>
+                </property>
+               </widget>
+              </item>
+             </layout>
+            </item>
+            <item row="1" column="0">
+             <layout class="QHBoxLayout" name="horizontalLayout_3">
+              <item>
+               <widget class="QLabel" name="label_4">
+                <property name="text">
+                 <string>最大超时(秒)</string>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QLineEdit" name="max_timeout_s">
+                <property name="maximumSize">
+                 <size>
+                  <width>100</width>
+                  <height>30</height>
+                 </size>
+                </property>
+                <property name="toolTip">
+                 <string>最大允许的网络延迟超时时间
+超过此时间则判定为请求失败</string>
+                </property>
+               </widget>
+              </item>
+             </layout>
+            </item>
+            <item row="1" column="1">
+             <layout class="QHBoxLayout" name="horizontalLayout_4">
+              <item>
+               <widget class="QLabel" name="label_5">
+                <property name="text">
+                 <string>最大请求重试次数</string>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QLineEdit" name="max_retries">
+                <property name="maximumSize">
+                 <size>
+                  <width>100</width>
+                  <height>30</height>
+                 </size>
+                </property>
+               </widget>
+              </item>
+             </layout>
+            </item>
+            <item row="3" column="1">
+             <layout class="QHBoxLayout" name="horizontalLayout_8">
+              <item>
+               <widget class="QLabel" name="label_9">
+                <property name="text">
+                 <string>落款解析重试间隔(秒)</string>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QLineEdit" name="llm_fetch_interval_s">
+                <property name="maximumSize">
+                 <size>
+                  <width>100</width>
+                  <height>30</height>
+                 </size>
+                </property>
+               </widget>
+              </item>
+             </layout>
+            </item>
+            <item row="4" column="0">
+             <layout class="QHBoxLayout" name="horizontalLayout_9">
+              <item>
+               <widget class="QLabel" name="label_10">
+                <property name="text">
+                 <string>首选大语言模型</string>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QLineEdit" name="glm_model">
+                <property name="maximumSize">
+                 <size>
+                  <width>100</width>
+                  <height>30</height>
+                 </size>
+                </property>
+                <property name="toolTip">
+                 <string>智谱清言首选大语言模型</string>
+                </property>
+               </widget>
+              </item>
+             </layout>
+            </item>
+            <item row="2" column="1">
+             <layout class="QHBoxLayout" name="horizontalLayout_6">
+              <item>
+               <widget class="QLabel" name="label_7">
+                <property name="text">
+                 <string>落款解析重试次数</string>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QLineEdit" name="max_llm_retries">
+                <property name="maximumSize">
+                 <size>
+                  <width>100</width>
+                  <height>30</height>
+                 </size>
+                </property>
+                <property name="toolTip">
+                 <string>落款解析是通过调用智谱大模型实现的
+有时模型拥挤失败率高，可以把该值调大</string>
+                </property>
+               </widget>
+              </item>
+             </layout>
+            </item>
+            <item row="0" column="1">
+             <layout class="QHBoxLayout" name="horizontalLayout_2">
+              <item>
+               <widget class="QLabel" name="label_3">
+                <property name="text">
+                 <string>单批请求数</string>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QLineEdit" name="max_article_count_per_request">
+                <property name="maximumSize">
+                 <size>
+                  <width>100</width>
+                  <height>30</height>
+                 </size>
+                </property>
+                <property name="toolTip">
+                 <string>设置单次获取推文索引多少条。最大值为10。
+不影响获取总数，只影响时间长短。</string>
+                </property>
+               </widget>
+              </item>
+             </layout>
+            </item>
+            <item row="2" column="0">
+             <layout class="QHBoxLayout" name="horizontalLayout_5">
+              <item>
+               <widget class="QLabel" name="label_6">
+                <property name="text">
+                 <string>每次请求间隔(秒)</string>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QLineEdit" name="fetch_interval_s">
+                <property name="maximumSize">
+                 <size>
+                  <width>100</width>
+                  <height>30</height>
+                 </size>
+                </property>
+                <property name="toolTip">
+                 <string>建议间隔时间不要小于1秒
+以免被微信封禁</string>
+                </property>
+               </widget>
+              </item>
+             </layout>
+            </item>
+            <item row="0" column="0">
+             <layout class="QHBoxLayout" name="horizontalLayout">
+              <item>
+               <widget class="QLabel" name="label_2">
+                <property name="text">
+                 <string>监听端口</string>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QLineEdit" name="listen_port">
+                <property name="maximumSize">
+                 <size>
+                  <width>100</width>
+                  <height>30</height>
+                 </size>
+                </property>
+                <property name="toolTip">
+                 <string>任意四位数字，如遇到网络异常可尝试修改</string>
+                </property>
+               </widget>
+              </item>
+             </layout>
+            </item>
+            <item row="3" column="0">
+             <layout class="QHBoxLayout" name="horizontalLayout_7">
+              <item>
+               <widget class="QLabel" name="label_8">
+                <property name="text">
+                 <string>稿费基数(元)</string>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QLineEdit" name="fee_base">
+                <property name="maximumSize">
+                 <size>
+                  <width>100</width>
+                  <height>30</height>
+                 </size>
+                </property>
+                <property name="toolTip">
+                 <string>参与一篇文章稿费算多少钱</string>
+                </property>
+               </widget>
+              </item>
+             </layout>
+            </item>
+           </layout>
+          </widget>
+         </item>
+         <item>
+          <widget class="QWidget" name="widget_3" native="true">
+           <layout class="QGridLayout" name="gridLayout_3">
+            <property name="leftMargin">
+             <number>15</number>
+            </property>
+            <property name="rightMargin">
+             <number>15</number>
+            </property>
+            <property name="spacing">
+             <number>20</number>
+            </property>
+            <item row="0" column="1">
+             <widget class="QLineEdit" name="glm_api_key">
+              <property name="toolTip">
+               <string>从智谱清言开发者平台获得</string>
+              </property>
+             </widget>
+            </item>
+            <item row="0" column="0">
+             <widget class="QLabel" name="label_12">
+              <property name="text">
+               <string>智谱大模型 API KEY</string>
+              </property>
+             </widget>
+            </item>
+            <item row="1" column="0">
+             <widget class="QLabel" name="label_13">
+              <property name="toolTip">
+               <string/>
+              </property>
+              <property name="text">
+               <string>小夏成员名单</string>
+              </property>
+             </widget>
+            </item>
+            <item row="1" column="1">
+             <widget class="QTextEdit" name="xiaoxia_members">
+              <property name="toolTip">
+               <string>人名之间用逗号隔开</string>
+              </property>
+              <property name="styleSheet">
+               <string notr="true">QTextEdit {
+border: 1px solid #888888;
+border-radius: 8px; /* 外层圆角 */
+background-color: #ffffff;
+padding: 2px;
+font-size: 14px;
+}
+
+QTextEdit QWidget#qt_scrollarea_viewport {
+background-color: rgb(255, 255, 255);
+border-radius: 8px; 
+}
+
+/* 垂直滚动条整体 */
+        QTextEdit QScrollBar:vertical {
+            background-color: #F7F8FA;
+            width: 10px;
+            margin: 0px 0px 0px 0px;
+        }
+
+        /* 滚动条滑块（未按下） */
+        QTextEdit QScrollBar::handle:vertical {
+            background-color: #C8CCD1;
+            min-height: 20px;
+            min-width: 20px;
+            border-radius: 5px;
+            margin: 2px 2px 2px 2px;
+        }
+        /* 滚动条滑块（鼠标悬浮） */
+        QTextEdit QScrollBar::handle:vertical:hover {
+            background-color: #A8ADB5;
+        }
+        /* 滚动条滑块（按下） */
+        QTextEdit QScrollBar::handle:vertical:pressed {
+            background-color: #8D9299;
+        }
+        /* 滚动条上下/左右箭头按钮 */
+        QTextEdit QScrollBar::add-line:vertical,
+        QTextEdit QScrollBar::sub-line:vertical{
+            background: none;
+            width: 0px;
+            height: 0px;
+        }
+        /* 滚动条两端的空白区域（点击可以跳转） */
+        QTextEdit QScrollBar::add-page:vertical,
+        QTextEdit QScrollBar::sub-page:vertical{
+            background-color: #F7F8FA;
+        }</string>
+              </property>
+             </widget>
+            </item>
+           </layout>
+          </widget>
+         </item>
+         <item>
+          <widget class="QWidget" name="widget_4" native="true">
+           <property name="styleSheet">
+            <string notr="true">QPushButton {
+	background: rgb(6, 173, 86);
+	color: rgb(255, 255, 255);
+	border-radius: 8px;
+	font-size: 14px;
+}
+QPushButton:hover {
+	background: rgb(6, 156, 76);
+}</string>
+           </property>
+           <layout class="QHBoxLayout" name="horizontalLayout_12">
+            <property name="spacing">
+             <number>30</number>
+            </property>
+            <property name="leftMargin">
+             <number>40</number>
+            </property>
+            <property name="rightMargin">
+             <number>40</number>
+            </property>
+            <item>
+             <widget class="QPushButton" name="cancel_btn">
+              <property name="minimumSize">
+               <size>
+                <width>0</width>
+                <height>30</height>
+               </size>
+              </property>
+              <property name="cursor">
+               <cursorShape>PointingHandCursor</cursorShape>
+              </property>
+              <property name="text">
+               <string>取消</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QPushButton" name="apply_btn">
+              <property name="minimumSize">
+               <size>
+                <width>0</width>
+                <height>30</height>
+               </size>
+              </property>
+              <property name="cursor">
+               <cursorShape>PointingHandCursor</cursorShape>
+              </property>
+              <property name="text">
+               <string>确定</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QPushButton" name="set_default_btn">
+              <property name="minimumSize">
+               <size>
+                <width>0</width>
+                <height>30</height>
+               </size>
+              </property>
+              <property name="cursor">
+               <cursorShape>PointingHandCursor</cursorShape>
+              </property>
+              <property name="text">
+               <string>恢复默认</string>
+              </property>
+             </widget>
+            </item>
+           </layout>
+          </widget>
+         </item>
+        </layout>
+       </widget>
+      </item>
+     </layout>
+    </widget>
+   </item>
+  </layout>
+ </widget>
+ <resources>
+  <include location="../ui_res.qrc"/>
+ </resources>
+ <connections/>
+</ui>

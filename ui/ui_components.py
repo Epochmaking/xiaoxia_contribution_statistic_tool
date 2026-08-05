@@ -5,6 +5,7 @@ from PySide6.QtWidgets import QWidget, QMessageBox, QFileDialog
 from PySide6.QtCore import Qt, QDate
 
 from ui.ui_compiled.main_win import Ui_MainForm
+from ui.ui_setting_components import SettingWindow
 from ui.ui_helper import set_article_confirm_table
 from controllers.threads import GetMpBizThread, GetArticleListThread, GetArticleContentThread
 from controllers.analyse import calculate_fee
@@ -19,11 +20,11 @@ from utils.logging import get_logger
 
 logger = get_logger(__name__)
 
-
 class MainWindow(QWidget, Ui_MainForm):
     """主窗口类"""
     def __init__(self):
         super().__init__()
+        self.setting_window = SettingWindow(parent=None)
         self.setWindowFlags(Qt.WindowType.FramelessWindowHint)  # 1. 设置窗口标志：无边框
         self.setAttribute(Qt.WidgetAttribute.WA_TranslucentBackground) # 2. 设置背景透明（必须和无边框一起用）
         self.setupUi(self)
@@ -250,8 +251,42 @@ class MainWindow(QWidget, Ui_MainForm):
             self.m_drag = False
             event.accept()
 
-    # pylint: enable=invalid-name
+    def closeEvent(self, event):
+        """关闭事件：主窗口退出时一并关闭设置窗口和清理运行中的线程"""
+        try:
+            # 关闭设置窗口
+            if hasattr(self, 'setting_window') and self.setting_window is not None:
+                try:
+                    self.setting_window.close()
+                except Exception:  # pylint: disable=broad-exception-caught
+                    pass
+                self.setting_window = None
 
+            # 停止可能仍在运行的三个线程
+            if self.get_article_content_thread is not None:
+                try:
+                    self.get_article_content_thread.stop()
+                except Exception:  # pylint: disable=broad-exception-caught
+                    pass
+                self.get_article_content_thread = None
+            if self.get_article_list_thread is not None:
+                try:
+                    self.get_article_list_thread.stop()
+                except Exception:  # pylint: disable=broad-exception-caught
+                    pass
+                self.get_article_list_thread = None
+            if self.get_mp_biz_thread is not None:
+                try:
+                    self.get_mp_biz_thread.stop()
+                except Exception:  # pylint: disable=broad-exception-caught
+                    pass
+                self.get_mp_biz_thread = None
+        except Exception:  # pylint: disable=broad-exception-caught
+            pass
+        finally:
+            event.accept()
+
+    # pylint: enable=invalid-name
 
     def close_win_btn_on_click(self):
         """关闭按钮点击事件"""
@@ -412,5 +447,8 @@ class MainWindow(QWidget, Ui_MainForm):
 
     def setting_btn_on_click(self):
         """设置按钮点击事件"""
+        if self.setting_window is None:
+            return
         logger.info("打开设置")
-        os.startfile(consts.CONFIG_FILE)
+        self.setting_window.show()
+        # os.startfile(consts.CONFIG_FILE)

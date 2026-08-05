@@ -120,8 +120,7 @@ class Ui_MainForm(object):
         MainForm.setWindowIcon(icon)
         MainForm.setWindowOpacity(1.000000000000000)
         MainForm.setAutoFillBackground(False)
-        MainForm.setStyleSheet(u"\n"
-"border: none;")
+        MainForm.setStyleSheet(u"border: none;")
         self.horizontalLayout_3 = QHBoxLayout(MainForm)
         self.horizontalLayout_3.setObjectName(u"horizontalLayout_3")
         self.MainFrame = QFrame(MainForm)

@@ -57,7 +57,8 @@ def read_xiaoxia_members() -> list[str] | None:
     if xiaoxia_members is None or xiaoxia_members in ["None", "none", "null", "Null", "空"]:
         logger.warning("小夏成员名单为空，将默认所有成员都是小夏")
         return None
-    xiaoxia_member_list =  xiaoxia_members.replace("，", ",").replace("、", ",").split(",")
+    xiaoxia_member_list =  (xiaoxia_members.replace("，", ",").replace("、", ",")
+                            .replace(";", ",").replace("；", ",").split(","))
     for (i, member) in enumerate(xiaoxia_member_list):
         xiaoxia_member_list[i] = member.replace(" ", "")
     if len(xiaoxia_member_list) == 0:
