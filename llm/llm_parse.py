@@ -66,6 +66,9 @@ def llm_request(system_prompt: str, user_prompt: str, temperature: float = 0.1, 
                 continue
         except requests.exceptions.RequestException as e:
             logger.warning(f"LLM模型调用失败，异常信息：{e}")
+            if BACKUP_MODEL is None:
+                logger.error("备用模型未配置，无法重试")
+                return ""
             logger.info(f"第 {i + 1} 次重试")
             time.sleep(LLM_FETCH_INTERVAL_S)
             continue
