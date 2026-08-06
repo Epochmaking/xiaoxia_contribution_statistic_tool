@@ -29,10 +29,11 @@ TEMP_PATH = Path(tempfile.gettempdir()) / "xiaoxia_contribution_statistic_tool"
 TEMP_CONTEXT_DIR = TEMP_PATH / "temp_context"
 TEMP_DB_PATH = TEMP_PATH / "temp_db.db"
 
-CONFIG_FILE = TEMP_PATH / "xiaoxia_tool_config.ini"
+CONFIG_FILE = TEMP_PATH / "config.ini"
 
 # 若不存在文件，创建默认文件
 if not os.path.exists(CONFIG_FILE):
+    TEMP_PATH.mkdir(parents=True, exist_ok=True)
     with open(CONFIG_FILE, "w", encoding="utf-8") as f:
         f.write(DEFAULT_CONFIG)
 

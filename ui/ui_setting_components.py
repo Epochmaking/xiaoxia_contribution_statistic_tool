@@ -121,7 +121,11 @@ class SettingWindow(QWidget, Ui_Form):
         self.fee_base.setText(str(read_config("fee_base")))
         self.glm_api_key.setText(read_config("glm_api_key"))
         # QTextEdit 使用 setPlainText / toPlainText，而非 setText / text
-        members_val = read_config("xiaoxia_members", "") or ""
+        members_val = read_config("xiaoxia_members", "")
+        if members_val is None:
+            members_val = ""
+        else:
+            members_val = members_val.replace(",", "，")
         self.xiaoxia_members.setPlainText(members_val)
 
     def _get_widget_text(self, widget) -> str:
@@ -201,7 +205,7 @@ class SettingWindow(QWidget, Ui_Form):
             "fee_base": self._get_widget_text(self.fee_base),
             "glm_api_key": self._get_widget_text(self.glm_api_key),
             "xiaoxia_members": (self._get_widget_text(self.xiaoxia_members)
-                                .replace(r"\n", ",").replace("，", ",").replace("、", ",")
+                                .replace("\n", ",").replace("，", ",").replace("、", ",")
                                 .replace(";", ",")).replace("；", ","),
         }
         try:

@@ -450,5 +450,6 @@ class MainWindow(QWidget, Ui_MainForm):
         if self.setting_window is None:
             return
         logger.info("打开设置")
+        self.setting_window.show_config_values()
         self.setting_window.show()
         # os.startfile(consts.CONFIG_FILE)
