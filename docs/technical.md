@@ -2,16 +2,17 @@
 
 ## 一、技术栈总览
 
-| 类别         | 技术方案                         | 版本/说明                        |
-| ------------ | -------------------------------- | --------------------------------- |
-| 编程语言     | Python                           | 3.12+（基于类型提示）             |
-| 包管理       | uv                               | 依赖锁定与虚拟环境管理            |
-| 编译打包     | Nuitka                           | 单文件/独立目录，PySide6/Playwright 插件 |
-| 图形界面     | PySide6 + Qt Designer            | UI 描述文件 → Python 代码编译    |
-| 数据库       | SQLite + SQLAlchemy 2.x          | 本地轻量存储（临时文件）          |
-| 抓包/流量分析 | mitmproxy                        | HTTP/HTTPS 透明代理              |
-| 页面爬虫     | Playwright                       | Chromium 无头浏览器驱动           |
-| 大语言模型   | 智谱 GLM API                     | 首选 glm-4.7，备选 glm-5，支持 JSON 结构化输出 |
+
+| 类别          | 技术方案                | 版本/说明                                      |
+| ------------- | ----------------------- | ---------------------------------------------- |
+| 编程语言      | Python                  | 3.12+（基于类型提示）                          |
+| 包管理        | uv                      | 依赖锁定与虚拟环境管理                         |
+| 编译打包      | Nuitka                  | 单文件/独立目录，PySide6/Playwright 插件       |
+| 图形界面      | PySide6 + Qt Designer   | UI 描述文件 → Python 代码编译                 |
+| 数据库        | SQLite + SQLAlchemy 2.x | 本地轻量存储（临时文件）                       |
+| 抓包/流量分析 | mitmproxy               | HTTP/HTTPS 透明代理                            |
+| 页面爬虫      | Playwright              | Chromium 无头浏览器驱动                        |
+| 大语言模型    | 智谱 GLM API            | 首选 glm-4.7，备选 glm-5，支持 JSON 结构化输出 |
 
 ### 核心依赖（pyproject.toml）
 
@@ -33,8 +34,8 @@ pathlib>=1.0.1          # 路径操作
 
 ```
 xiaoxia_contribution_statistic_tool/
-├── main.py                    # 应用入口：启动 QApplication 与 MainWindow
-├── build.py                   # Nuitka 打包脚本（--standalone + 浏览器数据嵌入）
+├── 小夏推送统计工具.py          # 应用入口：启动 QApplication 与 MainWindow
+├── build.py                   # Nuitka 打包脚本（--standalone + 浏览器数据智能嵌入）
 ├── pyproject.toml             # 项目依赖配置
 ├── xiaoxia_tool_config.ini    # 运行时配置文件（自动生成，含 BIZ、API Key 等）
 │
@@ -45,7 +46,7 @@ xiaoxia_contribution_statistic_tool/
 │   ├── proxy.py               # Windows 系统代理开关（注册表 + WinInet 刷新）
 │   ├── crawler.py             # mitmproxy 爬虫基类、BIZ 抓取、文章列表分页抓取
 │   ├── content_crawler.py     # Playwright 浏览器自动化：文章内容爬取、人机验证处理
-│   ├── analyse.py             # （预留）文章分析入口
+│   ├── analyse.py             # 稿费分析
 │   ├── export.py              # Excel 导出（openpyxl）
 │   └── threads.py             # QThread 工作线程：GetMpBizThread / GetArticleListThread / GetArticleContentThread
 │
@@ -143,41 +144,52 @@ GUI (MainWindow.step_two_btn_on_click)
   └─► 信号 task_over(all_articles) → 弹窗确认 → 进入步骤三
 ```
 
-#### 步骤三：文章内容爬取（含人机验证）
+#### 步骤三：文章内容爬取（含人机验证，三阶段流水线）
 
 ```
 GUI (start_article_content_crawl)
   └─► GetArticleContentThread.start(article_list, to_calc_fee)
        └─► persist_articles_to_db(article_list)
             └─► session.add(Article(**article)) → session.commit() 写入 SQLite
-       └─► ContentCrawler.crawl_all_articles(to_calc_fee)
-            └─► 初始化 Playwright Chromium（headed，窗口在屏幕外默认隐藏）
-            └─► 逐篇文章 page.goto(content_url)：
-                 ┌─► ① 人机验证检测：
-                 │     is_verify_page(page) → URL 关键词匹配 + 页面文本关键词匹配
-                 │     命中验证页：
-                 │       └─► _set_window_visible(True)  浏览器窗口移回屏幕可见区域
-                 │       └─► signals.need_user_verify.emit() → GUI 弹窗
-                 │       └─► wait_for_user_verify()       阻塞在 threading.Event 上
-                 │       └─► 用户完成验证 → GUI 发射 verify_done(ok) → Event.set()
-                 │       └─► _set_window_visible(False) 窗口再次隐藏
-                 │
-                 ├─► ② 阅读量请求：
-                 │     get_reader_stats(content_url, template_flow)
-                 │     └─► 解析 content_url 的 URL 参数（__biz / mid / idx / sn）
-                 │     └─► 使用 template_flow 的 Cookie/Headers
-                 │     └─► POST https://mp.weixin.qq.com/mp/getappmsgext
-                 │     └─► 提取 read_num / like_num / old_like_num / share_num / collect_num
-                 │
-                 └─► ③ 文末落款 LLM 解析：
-                       parse_creator_list_by_llm(page.body.innerText[-300:])
-                       └─► POST https://open.bigmodel.cn/api/paas/v4/chat/completions
-                       └─► system_prompt 定义"只提取文末连续成片落款"规则
-                       └─► 若开启 to_calc_fee：
-                             format_creator_list_by_llm(creator_list)
-                             └─► 调用 GLM response_format=json_object
-                             └─► 输出 { "文": [".."], "排版": [".."], ... }
-            └─► 写入数据库 Article 表的 view_count / heart_count / share_count / creators_list
+       └─► 启动三阶段流水线（生产者-消费者队列解耦，最大化吞吐量）：
+
+          ┌───────────────────────────────────────────────────────────┐
+          │  Stage1：浏览器爬取（单线程，防反爬）                       │
+          │  ContentCrawler.crawl_pages_for_pipeline()                │
+          │    └─► 初始化 Playwright Chromium（headed，屏外隐藏）       │
+          │    └─► 逐篇 page.goto(content_url)：                       │
+          │         ┌─► 人机验证检测 + GUI交互（同旧逻辑）              │
+          │         └─► 提取 crop_text, reader_stats                  │
+          │    └─► 结果 {article_id, crop_text, reader_stats}         │
+          │         推入 _raw_queue（原始页面数据队列）                 │
+          └───────────────────────┬───────────────────────────────────┘
+                                  │ raw_queue
+                                  ▼
+          ┌───────────────────────────────────────────────────────────┐
+          │  Stage2：LLM 落款解析（LLM_PARSE_WORKERS 线程并行）         │
+          │  _parse_worker()                                          │
+          │    └─► parse_creator_list_by_llm(crop_text)               │
+          │         └─► POST GLM API（首选 glm-4.7，失败降级 glm-5）   │
+          │         └─► 从文末300字符提取连续成片落款                  │
+          │    └─► 结果 {article_id, creator_list}                    │
+          │         推入 _parsed_queue（待格式化队列）                 │
+          └───────────────────────┬───────────────────────────────────┘
+                                  │ parsed_queue
+                                  ▼
+          ┌───────────────────────────────────────────────────────────┐
+          │  Stage3：LLM 结构化 + 入库（LLM_FORMAT_WORKERS 线程并行）   │
+          │  _format_worker()                                         │
+          │    └─► to_calc_fee=True 时：                               │
+          │         format_creator_list_by_llm(creator_list)          │
+          │         └─► GLM response_format=json_object               │
+          │         └─► 输出 {"文": [".."], "排版": [".."], ...}       │
+          │    └─► 更新数据库 Article：                                │
+          │         view_count / heart_count / like_count             │
+          │         share_count / collect_count                       │
+          │         creators_list / formatted_creators_list           │
+          └───────────────────────────────────────────────────────────┘
+
+       └─► _progress_poller() 独立线程轮询三阶段计数器 → GUI 实时进度
   └─► 信号 task_over(bool) → GUI 加载表格展示
 ```
 
@@ -220,6 +232,7 @@ master.commands.call("replay.client", [new_flow])
 ```
 
 **关键实现**：
+
 - `Crawler._run_loop()` 在子线程中绑定事件循环，通过 `threading.Event` 与主线程同步
 - `_replay_and_wait()` 以 100ms 间隔轮询响应，带超时保护
 - 跨线程安全：使用 `asyncio.run_coroutine_threadsafe` 提交协程到 mitmproxy 所在事件循环
@@ -238,11 +251,11 @@ ctypes.windll.Wininet.InternetSetOptionW(0, INTERNET_OPTION_SETTINGS_CHANGED, 0,
 ctypes.windll.Wininet.InternetSetOptionW(0, INTERNET_OPTION_REFRESH, 0, 0)
 ```
 
-程序异常退出时，`main.py` 的 `finally` 块会调用 `unset_network_proxy()` 清理，避免用户系统代理残留。
+程序异常退出时，`小夏推送统计工具.py` 的 `finally` 块会调用 `unset_network_proxy()` 清理，避免用户系统代理残留。
 
 ### 4.3 Playwright 人机验证智能处理
 
-**文件**：`controllers/content_crawler.py:227-354`
+**文件**：`controllers/content_crawler.py:207-224`（验证判定）、`controllers/content_crawler.py:255-392`（流水线爬取）
 
 **核心思路**：默认后台静默模式，仅在检测到验证页时临时将窗口移至屏幕可见区域。
 
@@ -262,6 +275,7 @@ signals.verify_done.connect(self._on_verify_done, Qt.ConnectionType.DirectConnec
 ```
 
 **验证页判定**（双保险）：
+
 1. URL 正则匹配 `mp/wappoc_appmsgcaptcha`
 2. 页面 body 文本关键词匹配："环境异常"、"前往验证"、"人机验证"、"安全校验"
 
@@ -280,6 +294,7 @@ if db_path.exists():
 ```
 
 **Article 表字段**（`models/article_models.py:6-25`）：
+
 - 基础字段：`id`, `title`, `author`, `publishing_time`, `content_url`, `type`
 - 参与人员：`creators_list`（原始文本）, `formatted_creators_list`（JSON 结构化）
 - 统计数据：`view_count`, `like_count`, `heart_count`, `share_count`, `collect_count`
@@ -290,12 +305,14 @@ if db_path.exists():
 
 采用**两阶段调用**策略，确保准确性：
 
-| 阶段 | 函数 | 模型设置 | 作用 |
-|------|------|----------|------|
-| 第一阶段 | `parse_creator_list_by_llm` | `temperature=0.3`, `response_format=text` | 从文章末尾 300 字符中精准提取"连续成片落款"，过滤正文/广告/导航 |
-| 第二阶段 | `format_creator_list_by_llm` | `temperature=0.3`, `response_format=json_object` | 将"排版：张三、李四"等自然语言转换为 `{"排版": ["张三", "李四"]}` 的结构化数据，过滤单位/责编/出品行 |
+
+| 阶段     | 函数                         | 模型设置                                         | 作用                                                                                                |
+| -------- | ---------------------------- | ------------------------------------------------ | --------------------------------------------------------------------------------------------------- |
+| 第一阶段 | `parse_creator_list_by_llm`  | `temperature=0.3`, `response_format=text`        | 从文章末尾 300 字符中精准提取"连续成片落款"，过滤正文/广告/导航                                     |
+| 第二阶段 | `format_creator_list_by_llm` | `temperature=0.3`, `response_format=json_object` | 将"排版：张三、李四"等自然语言转换为`{"排版": ["张三", "李四"]}` 的结构化数据，过滤单位/责编/出品行 |
 
 **容错机制**：
+
 - 首选模型 `glm-4.7`，失败自动降级 `glm-5`
 - JSON 输出兜底解析：自动剥离 Markdown 代码块标记
 - 无落款时返回空字符串或空对象 `{}`，不编造信息
@@ -315,10 +332,11 @@ GUI 线程 (MainWindow)                    工作线程 (QThread)
 
 三种工作线程：
 
-| 线程类 | 职责 | 发射信号 |
-|--------|------|---------|
-| `GetMpBizThread` | 获取公众号 BIZ | `task_over(str)` |
-| `GetArticleListThread` | 分页获取文章列表 | `task_over(list)`, `flow_got(bool)`, `report_index(int)` |
+
+| 线程类                    | 职责             | 发射信号                                                                                               |
+| ------------------------- | ---------------- | ------------------------------------------------------------------------------------------------------ |
+| `GetMpBizThread`          | 获取公众号 BIZ   | `task_over(str)`                                                                                       |
+| `GetArticleListThread`    | 分页获取文章列表 | `task_over(list)`, `flow_got(bool)`, `report_index(int)`                                               |
 | `GetArticleContentThread` | 逐篇爬取文章内容 | `article_list_persist_ok()`, `need_user_verify()`, `task_over(bool)`, `report_progress(int, int, str)` |
 
 ### 4.7 UI 自定义绘制与交互
@@ -334,6 +352,30 @@ GUI 线程 (MainWindow)                    工作线程 (QThread)
 - `FramelessWindowHint` + `WA_TranslucentBackground` 实现无边框半透明窗口
 - 自定义拖动：`mousePressEvent` / `mouseMoveEvent` / `mouseReleaseEvent` 检测 `title_bar.underMouse()`
 - `QStackedWidget` 实现步骤流程切换（步骤一/二/三/结果页）
+
+### 4.8 三阶段流水线并行架构（Stage1/2/3）
+
+**文件**：`controllers/threads.py:150-490`（GetArticleContentThread）
+
+为解决"浏览器爬取慢 + LLM 调用高延迟"的串联瓶颈，采用**生产者-消费者队列解耦**的三阶段流水线：
+
+```
+Stage1 浏览器(单线程) → _raw_queue → Stage2 LLM解析(多线程) → _parsed_queue → Stage3 LLM格式化+入库(多线程)
+```
+
+
+| 阶段                     | 线程数                      | 输入         | 输出                     | 瓶颈                   |
+| ------------------------ | --------------------------- | ------------ | ------------------------ | ---------------------- |
+| Stage1 浏览器爬取        | 1（防反爬）                 | article_list | crop_text + reader_stats | 微信反爬限速、人机等待 |
+| Stage2 LLM 落款提取      | LLM_PARSE_WORKERS（默认3）  | crop_text    | creator_list 纯文本      | GLM API 网络延迟       |
+| Stage3 LLM 结构化 + 入库 | LLM_FORMAT_WORKERS（默认2） | creator_list | JSON格式化 + DB写入      | GLM API + SQLite 写入  |
+
+**关键实现**：
+
+- `queue.Queue` 作为线程间安全数据通道，None 哨兵控制 Worker 优雅退出
+- `_progress_poller` 独立线程每 300ms 轮询三个计数器，向 GUI 发射合成进度消息：`浏览器 N/总 · 作者解析 N/总 · 格式化入库 N/总 | [队列深度]`
+- `_stop_flag` (threading.Event) 全局停止信号，被所有阶段循环检查
+- Stage3 Worker 完成后 `join()` 两个队列，确保 100% 无遗漏后再 `emit(task_over)`
 
 ---
 
@@ -363,26 +405,46 @@ mp_id=MzA3OTM1MTIzNQ==                    # 已获取的公众号 BIZ（运行�
 
 ## 六、打包与发布流程（build.py）
 
-**文件**：`build.py:9-50`
+**文件**：`build.py:9-80`（`_get_browser_dir_config` 浏览器目录智能探测 + `main` 打包主函数）
+
+**当前版本**：FILE_VERSION / PRODUCT_VERSION = `0.2.1.0`
 
 ```bash
 python build.py
-# 底层执行：
-python -m nuitka main.py \
+# 底层执行（示意，以实际日志输出为准）：
+python -m nuitka 小夏推送统计工具.py \
     --standalone \                      # 独立目录模式
-    --windows-disable-console \         # 无控制台窗口
+    --windows-console-mode=disable \    # 无控制台窗口（取代旧版 --windows-disable-console）
     --enable-plugin=pyside6 \           # PySide6 资源自动打包
-    --enable-plugin=playwright \        # Playwright 浏览器自动打包
-    --include-data-dir=%LOCALAPPDATA%/ms-playwright=ms-playwright \
+    --enable-plugin=playwright \        # Playwright 驱动自动打包
+    --include-data-dir=<自动探测源目录>=ms-playwright \
+                                        # 浏览器二进制：优先级 1) %LOCALAPPDATA%\ms-playwright
+                                        #           降级 2) .dist\.local-browsers
+    --file-version=0.2.1.0 \
+    --product-version=0.2.1.0 \
+    --product-name=Xiaoxia Contribution Statistic Tool \
+    --copyright=ZajacHax 2026 \
     --deployment \                      # 部署优化
     --lto=auto \                        # 链接时优化
-    --remove-output \                   # 清理中间产物
     --show-progress \
     --show-memory \
+    --jobs=10 \                         # 并行编译
     --output-dir=./build
 ```
 
-**输出目录**：`build/main.dist/`（可直接分发的独立程序目录）
+**浏览器目录智能探测逻辑**（解决"文件夹拷不完整"问题）：
+
+1. **首选源**：`%LOCALAPPDATA%\ms-playwright`（系统 Playwright 安装目录，chromium-xxxx/chrome-win64 完整文件）
+2. **降级源**：项目内 `.dist\.local-browsers`（历史构建产物，本地无 ms-playwright 时使用）
+3. **目标目录**：打包产物根目录下 `ms-playwright/`，与 `content_crawler.py:_get_browser_root()` 中的 `PLAYWRIGHT_BROWSERS_PATH` 完全对应
+4. **安全兜底**：两者都不存在时发出 warning，不强制中止打包（用户可手动拷入）
+
+> ⚠️ **关键修复（v0.2.1.0）**：
+>
+> - 旧版 `BROWSER_DIR = ".dist\.local-browsers=playwright\driver\package\.local-browsers"` 目标路径是 Playwright 内部目录，而运行时实际读取的是 `{程序根目录}\ms-playwright`（见 `content_crawler.py:72-78`），导致**浏览器文件拷入错误位置 → 运行时找不到 chromium**。
+> - 现统一目标目录为 `ms-playwright`，同时引入源目录探测，避免依赖单个绝对路径失效。
+
+**输出目录**：`build/小夏推送统计工具.dist/`（可直接分发的独立程序目录，`小夏推送统计工具.exe` 位于根目录，`ms-playwright/` 并列存放）
 
 ---
 
@@ -406,11 +468,12 @@ python -m nuitka main.py \
 
 ## 九、微信公众号接口说明（调试参考）
 
-| 接口用途 | URL | 关键参数 |
-|---------|-----|---------|
-| 历史消息入口 | `https://mp.weixin.qq.com/mp/profile_ext?action=home&__biz={biz}#wechat_redirect` | `__biz` |
-| 分页获取文章 | `https://mp.weixin.qq.com/mp/profile_ext?action=getmsg&__biz={biz}&f=json&offset={offset}&count={count}&is_ok=1&scene=124&...` | `__biz`, `offset`, `count`，需附带微信签名参数 |
-| 获取阅读/点赞/分享 | `https://mp.weixin.qq.com/mp/getappmsgext` | POST: `__biz`, `mid`, `idx`, `sn`, `appmsg_token`，需附带 Cookie |
+
+| 接口用途           | URL                                                                                                                            | 关键参数                                                        |
+| ------------------ | ------------------------------------------------------------------------------------------------------------------------------ | --------------------------------------------------------------- |
+| 历史消息入口       | `https://mp.weixin.qq.com/mp/profile_ext?action=home&__biz={biz}#wechat_redirect`                                              | `__biz`                                                         |
+| 分页获取文章       | `https://mp.weixin.qq.com/mp/profile_ext?action=getmsg&__biz={biz}&f=json&offset={offset}&count={count}&is_ok=1&scene=124&...` | `__biz`, `offset`, `count`，需附带微信签名参数                  |
+| 获取阅读/点赞/分享 | `https://mp.weixin.qq.com/mp/getappmsgext`                                                                                     | POST:`__biz`, `mid`, `idx`, `sn`, `appmsg_token`，需附带 Cookie |
 
 **返回 JSON 结构示例**（文章列表）：
 
@@ -427,7 +490,7 @@ python -m nuitka main.py \
 ## 十、模块引用关系图
 
 ```
-main.py (入口)
+小夏推送统计工具.py (入口)
 └─► ui/ui_components.py (MainWindow)
     ├─► ui/ui_helper.py (表格样式)
     │   └─► models/ui_models.py (ViewModel + Delegate)
@@ -460,12 +523,15 @@ utils/logging.py          （全局日志，被所有模块引用）
 
 ## 十一、关键设计决策记录
 
-| 决策 | 原因与权衡 |
-|------|-----------|
-| **mitmproxy 重放而非直接构造请求** | 微信分页接口有复杂签名机制，直接构造请求易被拦截。通过捕获合法请求再修改分页参数，完全绕过签名问题 |
-| **Playwright 默认 headed + 窗口移至屏幕外** | 无头模式下更容易触发微信反爬；headed 且窗口移至屏幕外兼顾"用户无感"与"会话完整性" |
-| **SQLite 临时文件数据库（每次启动重建）** | 工具属于单次运行性质，不需要长期历史；简化部署与清理；避免用户数据泄露风险 |
-| **两阶段 LLM 调用（提取→结构化）** | 单阶段让 LLM 直接输出 JSON 会有"混入正文"风险；分两步：先准确提取范围，再做字段拆分，显著提升精度 |
-| **QThread + 信号槽实现异步** | 避免阻塞 GUI；Qt 信号槽天然线程安全；人机验证场景需"爬虫阻塞→GUI提示→用户操作→爬虫唤醒"的线程协作 |
-| **Windows 注册表方式控制系统代理** | 微信 PC 客户端读取系统代理；mitmproxy 通过全局代理捕获流量；退出时必须还原否则影响用户正常上网 |
-| **Nuitka standalone 模式打包** | Playwright 浏览器资源 + PySide6 Qt 资源体积大，但避免用户安装 Python；使用 `--enable-plugin` 自动处理资源依赖 |
+
+| 决策                                                       | 原因与权衡                                                                                                                                                                                                       |
+| ---------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **mitmproxy 重放而非直接构造请求**                         | 微信分页接口有复杂签名机制，直接构造请求易被拦截。通过捕获合法请求再修改分页参数，完全绕过签名问题                                                                                                               |
+| **Playwright 默认 headed + 窗口移至屏幕外**                | 无头模式下更容易触发微信反爬；headed 且窗口移至屏幕外兼顾"用户无感"与"会话完整性"                                                                                                                                |
+| **SQLite 临时文件数据库（每次启动重建）**                  | 工具属于单次运行性质，不需要长期历史；简化部署与清理；避免用户数据泄露风险                                                                                                                                       |
+| **两阶段 LLM 调用（提取→结构化）**                        | 单阶段让 LLM 直接输出 JSON 会有"混入正文"风险；分两步：先准确提取范围，再做字段拆分，显著提升精度                                                                                                                |
+| **三阶段流水线 + 队列解耦（Stage1/2/3）**                  | 浏览器爬取（单线程防反爬）和 LLM API 调用（高延迟 IO 密集）是瓶颈差异极大的两个阶段；用队列解耦后 Stage2/Stage3 可多线程并行，整体吞吐量提升约 2~3 倍                                                            |
+| **QThread + 信号槽实现异步**                               | 避免阻塞 GUI；Qt 信号槽天然线程安全；人机验证场景需"爬虫阻塞→GUI提示→用户操作→爬虫唤醒"的线程协作                                                                                                             |
+| **Windows 注册表方式控制系统代理**                         | 微信 PC 客户端读取系统代理；mitmproxy 通过全局代理捕获流量；退出时必须还原否则影响用户正常上网                                                                                                                   |
+| **Nuitka standalone 模式打包**                             | Playwright 浏览器资源 + PySide6 Qt 资源体积大，但避免用户安装 Python；使用`--enable-plugin` 自动处理资源依赖                                                                                                     |
+| **打包时浏览器目录智能探测 + 目标统一为 `ms-playwright/`** | 旧版`=playwright\driver\package\.local-browsers` 目标路径与运行时 `PLAYWRIGHT_BROWSERS_PATH` 不一致，导致 chromium 找不到；同时 `%LOCALAPPDATA%` 绝对路径在不同机器失效，故引入两级降级探测 + 目标路径对齐运行时 |

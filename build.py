@@ -24,11 +24,11 @@ def main():
     # 构造 nuitka 参数列表
     args = [
         sys.executable, "-m", "nuitka", "小夏推送统计工具.py",
-        "--standalone",
+        "--onefile",
         "--windows-console-mode=disable",
         "--enable-plugin=pyside6",
         "--enable-plugin=playwright",
-        f"--include-data-dir={BROWSER_DIR}",
+        f"--include-raw-dir={BROWSER_DIR}",
         f"--file-version={FILE_VERSION}",
         f"--product-version={PRODUCT_VERSION}",
         "--product-name=Xiaoxia Contribution Statistic Tool",
