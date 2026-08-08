@@ -79,8 +79,21 @@ class MainWindow(QWidget, Ui_MainForm):
         # 检查证书状态
         ensure_cert_status(self)
 
+        # 检查是否是第一次打开软件
+        if consts.FIRST_OPEN:
+            self.first_open_message()
+
+    def first_open_message(self):
+        """第一次打开软件提示用户配置"""
+        write_config({"first_open": "0"})
+        msg_box = QMessageBox(parent=self)
+        msg_box.setText("这是第一次打开软件，请打开设置配置小夏成员名单。")
+        msg_box.setStandardButtons(QMessageBox.StandardButton.Ok)
+        msg_box.setWindowTitle("推送统计工具提示")
+        msg_box.show()
+
     # 汇报文章索引事件
-    def on_report_index(self, index: int): 
+    def on_report_index(self, index: int):
         """汇报文章索引事件"""
         self.index_status_msg_box.setText(
             f"捕获到公众号接口\n开始获取文章列表索引，请耐心等待...\n已获取{index}篇文章"
@@ -452,4 +465,3 @@ class MainWindow(QWidget, Ui_MainForm):
         logger.info("打开设置")
         self.setting_window.show_config_values()
         self.setting_window.show()
-        # os.startfile(consts.CONFIG_FILE)

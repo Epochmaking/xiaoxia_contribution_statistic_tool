@@ -21,15 +21,17 @@ glm_api_key='00ebdd968b7742babfa0a6e04b33a0e4.ZrdN0x9z5M5dbNsq' # GLM API密钥\
 glm_model='glm-4.7' # 首选glm-4.7模型\n
 glm_backup_model='glm-5' # 备选模型glm-5\n
 
-xiaoxia_members=None # 小夏成员名单，成员间用逗号隔开不要换行，如为空则默认所有人都是小夏\n
+xiaoxia_members='' # 小夏成员名单，成员间用逗号隔开不要换行，如为空则默认所有人都是小夏\n
 fee_base=100 # 稿费基数，单位元\n
+
+first_open=1 # 是否是第一次打开软件，用于提示用户配置\n
 """
 
 TEMP_PATH = Path(tempfile.gettempdir()) / "xiaoxia_contribution_statistic_tool"
 TEMP_CONTEXT_DIR = TEMP_PATH / "temp_context"
 TEMP_DB_PATH = TEMP_PATH / "temp_db.db"
 
-CONFIG_FILE = TEMP_PATH / "config.ini"
+CONFIG_FILE = Path.home() / "xiaoxia_config.ini"
 
 # 若不存在文件，创建默认文件
 if not os.path.exists(CONFIG_FILE):
@@ -60,6 +62,7 @@ MP_BIZ: str | None = os.getenv("mp_id", None)
 ARTICLE_LIST_URL: str | None = None
 ARTICLE_LIST_URL_TEMPLATE: str = "https://mp.weixin.qq.com/mp/profile_ext?action=home&__biz={biz}#wechat_redirect"
 TEMPLATE_FLOW: "HTTPFlow | None" = None
+FIRST_OPEN: bool = bool(int(os.getenv("first_open", "1")))
 
 
 __all__ = [
@@ -84,4 +87,5 @@ __all__ = [
     "TEMP_DB_PATH",
     "XIAOXIA_MEMBERS",
     "FEE_BASE",
+    "FIRST_OPEN",
 ]
