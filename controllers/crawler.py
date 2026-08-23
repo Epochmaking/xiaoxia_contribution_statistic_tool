@@ -8,6 +8,7 @@ from mitmproxy import http
 
 from controllers.proxy import unset_network_proxy, set_network_proxy
 from constants import LISTEN_PORT, MAX_TIMEOUT_S, LISTEN_HOST
+import constants as consts
 
 from utils.logging import get_logger
 logger = get_logger(__name__)
@@ -17,35 +18,28 @@ class MpBizResponseHandler:
     """mp biz响应处理类"""
     def __init__(self):
         self.biz_result: str | None = None
-        self.template_flow: http.HTTPFlow | None = None
     def __str__(self):
         return "MpBizResponseHandler"
     def response(self, flow: http.HTTPFlow):
-        """处理响应"""
+        """处理请求"""
         biz = flow.request.query.get("__biz") or flow.request.query.get("biz")
+
         if biz is not None:
             logger.info("biz got: %s, flow: %s", biz, flow.request.url)
-            self.template_flow = flow.copy()
             self.biz_result = biz
 
 
 class ArticleListResponseHandler:
     """文章列表URL响应处理类"""
     def __init__(self):
-        self.template_flow: http.HTTPFlow | None = None
         self.template_cookie_flow: http.HTTPFlow | None = None
     def __str__(self):
         return "ArticleListResponseHandler"
-    def response(self, flow: http.HTTPFlow):
-        """处理响应"""
-        # 跳过重放产生的请求
+    def request(self, flow: http.HTTPFlow):
+        """处理请求（在请求阶段捕获，避免客户端 stream reset 导致 response 钩子不触发）"""
         if flow.is_replay:
             return
-
-        if flow.request.query.get("action") == "getmsg":
-            logger.info("article list flow got: %s", flow.request.url)
-            self.template_flow = flow.copy()
-
+        logger.debug("flow got: %s", flow.request.url)
         if flow.request.query.get("action") == "urlcheck":
             logger.info("urlcheck flow got: %s", flow.request.url)
             self.template_cookie_flow = flow.copy()
@@ -159,7 +153,7 @@ class ArticleListCrawler(Crawler):
 
     def has_template(self) -> bool:
         """是否已经捕获到模板 flow"""
-        return self.response_handler.template_flow is not None
+        return self.has_cookie_template()
     
     def has_cookie_template(self) -> bool:
         """是否已经捕获到包含cookie的模板 flow"""
@@ -170,8 +164,8 @@ class ArticleListCrawler(Crawler):
         return self.response_handler.template_cookie_flow
     
     def get_template(self) -> http.HTTPFlow | None:
-        """获取文章列表模板 flow"""
-        return self.response_handler.template_flow
+        """获取文章列表模板 flow（兼容旧接口，返回cookie模板）"""
+        return self.get_cookie_template()
 
     async def _replay_and_wait(self, new_flow: http.HTTPFlow, timeout_s: float = 10.0) -> http.HTTPFlow | None:
         assert self.master is not None
@@ -199,23 +193,59 @@ class ArticleListCrawler(Crawler):
 
         :return: 文章列表
         """
-        template: http.HTTPFlow | None = self.response_handler.template_flow
-        if not template:
-            logger.error("未捕获到文章列表模板 flow，无法重放")
+        cookie_template: http.HTTPFlow | None = self.response_handler.template_cookie_flow
+        if not cookie_template:
+            logger.error("未捕获到urlcheck模板 flow，无法构造请求")
+            return None
+
+        biz = consts.MP_BIZ
+        if not biz:
+            logger.error("biz 未获取到，biz=%s", biz)
             return None
 
         try:
-            # 1. 基于模板复制新 flow，保留所有 cookie、headers、签名参数
-            new_flow = template.copy()
+            # 1. 从 cookie_template 中提取所需参数
+            key = cookie_template.request.query.get("key", "")
+            pass_ticket = cookie_template.request.query.get("pass_ticket", "")
+            appmsg_token = cookie_template.request.query.get("appmsg_token", "")
+            uin = cookie_template.request.query.get("uin", "")
 
-            # 2. 仅修改分页参数，其他参数完全保留（保证签名校验通过）
+            logger.info("构造getmsg请求: key=%s..., pass_ticket=%s..., appmsg_token=%s...",
+                        key[:8] if key else "",
+                        pass_ticket[:8] if pass_ticket else "",
+                        appmsg_token[:8] if appmsg_token else "")
+
+            # 2. 基于 cookie_template 复制新 flow，保留所有 cookie、headers
+            new_flow = cookie_template.copy()
+
+            # 3. 清空原有查询参数，构造完整的 getmsg 请求参数
+            #    使用 set_all 先设置固定的 action，再逐个设置其他参数
+            new_flow.request.path = "/mp/profile_ext"
+            # 先清空所有原有 query 参数
+            new_flow.request.query.clear()
+            new_flow.request.query["action"] = "getmsg"
+            new_flow.request.query["__biz"] = biz
+            new_flow.request.query["f"] = "json"
             new_flow.request.query["offset"] = str(offset)
             new_flow.request.query["count"] = str(count)
+            new_flow.request.query["is_ok"] = "1"
+            new_flow.request.query["scene"] = ""
+            new_flow.request.query["uin"] = uin
+            new_flow.request.query["key"] = key
+            new_flow.request.query["pass_ticket"] = pass_ticket
+            new_flow.request.query["wxtoken"] = ""
+            new_flow.request.query["appmsg_token"] = appmsg_token
+            new_flow.request.query["x5"] = "0"
 
-            # 3. 跨线程提交重放任务，等待请求完成
+            # 4. 设置为 GET 方法（确保正确）
+            new_flow.request.method = "GET"
+
+            logger.info("构造后的请求URL: %s", new_flow.request.url)
+
+            # 5. 跨线程提交重放任务，等待请求完成
             result_flow: http.HTTPFlow = self.run_async(self._replay_and_wait(new_flow, MAX_TIMEOUT_S))
 
-            # 4. 校验响应并解析
+            # 6. 校验响应并解析
             assert result_flow.response is not None
             if result_flow.response.status_code != 200:
                 logger.error(f"重放请求失败，状态码: {result_flow.response.status_code}")

@@ -49,7 +49,7 @@ class CountedQueue(queue.Queue):
 
 class GetMpBizThread(QThread):
     """获取微信公众号BIZ"""
-    task_over = Signal(str)
+    task_over = Signal(str, str)
 
     def __init__(self):
         super().__init__()
@@ -69,9 +69,10 @@ class GetMpBizThread(QThread):
                     logger.info("停止获取微信公众号BIZ")
                     break
                 mp_biz = self.crawler.get_mp_biz()
-                if mp_biz is not None:
+
+                if mp_biz:
                     self.to_stop = True
-                    logger.info("获取到微信公众号BIZ: %s", mp_biz)
+                    logger.info("获取微信公众号BIZ线程完成")
                     self.task_over.emit(mp_biz)
                     break
         finally:
@@ -103,8 +104,8 @@ class GetArticleListThread(QThread):
         try:
             self.crawler.start()
             while not self.to_stop:
-                if self.crawler.has_template() and self.crawler.has_cookie_template():
-                    logger.info("已捕获到文章列表接口模板，可开始分页拉取")
+                if self.crawler.has_cookie_template():
+                    logger.info("已捕获到urlcheck接口模板，可开始分页拉取")
                     consts.TEMPLATE_FLOW = self.crawler.get_cookie_template()
                     self.flow_got.emit(True)
                     break

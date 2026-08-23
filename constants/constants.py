@@ -9,7 +9,7 @@ if TYPE_CHECKING:
 
 DEFAULT_CONFIG = """# 提示：如需修改配置，修改完之后请保存文件并重新启动本软件
 
-listen_port=8082 # 监听端口\n
+listen_port=12345 # 监听端口\n
 max_article_count_per_request=10 # 每次请求的文章数量，最大10，推荐保持默认\n
 max_timeout_s=6 # 最大超时时间，单位秒\n
 max_retries=3 # 最大重试次数\n
@@ -62,6 +62,8 @@ MP_BIZ: str | None = os.getenv("mp_id", None)
 ARTICLE_LIST_URL: str | None = None
 ARTICLE_LIST_URL_TEMPLATE: str = "https://mp.weixin.qq.com/mp/profile_ext?action=home&__biz={biz}#wechat_redirect"
 TEMPLATE_FLOW: "HTTPFlow | None" = None
+PASS_TICKET_FLOW: "HTTPFlow | None" = None
+UIN: str | None = None
 FIRST_OPEN: bool = bool(int(os.getenv("first_open", "1")))
 
 
@@ -82,6 +84,8 @@ __all__ = [
     "LLM_BACKUP_MODEL",
     "LLM_FETCH_INTERVAL_S",
     "TEMPLATE_FLOW",
+    "PASS_TICKET_FLOW",
+    "UIN",
     "TEMP_PATH",
     "TEMP_CONTEXT_DIR",
     "TEMP_DB_PATH",
