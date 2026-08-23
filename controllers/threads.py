@@ -49,7 +49,7 @@ class CountedQueue(queue.Queue):
 
 class GetMpBizThread(QThread):
     """获取微信公众号BIZ"""
-    task_over = Signal(str, str)
+    task_over = Signal(str)
 
     def __init__(self):
         super().__init__()
