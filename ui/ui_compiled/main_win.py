@@ -19,7 +19,7 @@ from PySide6.QtWidgets import (QAbstractSpinBox, QApplication, QCheckBox, QDateE
     QDateTimeEdit, QFrame, QHBoxLayout, QHeaderView,
     QLabel, QLayout, QProgressBar, QPushButton,
     QSizePolicy, QSpacerItem, QStackedWidget, QTableView,
-    QTextBrowser, QVBoxLayout, QWidget)
+    QVBoxLayout, QWidget)
 from . import ui_res_rc
 
 class Ui_MainForm(object):
@@ -237,15 +237,11 @@ class Ui_MainForm(object):
         self.verticalLayout_7 = QVBoxLayout(self.content)
         self.verticalLayout_7.setObjectName(u"verticalLayout_7")
         self.verticalLayout_7.setContentsMargins(50, -1, 50, -1)
-        self.textBrowser = QTextBrowser(self.content)
-        self.textBrowser.setObjectName(u"textBrowser")
-        self.textBrowser.setMouseTracking(False)
-        self.textBrowser.setAcceptDrops(False)
-        self.textBrowser.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
-        self.textBrowser.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
-        self.textBrowser.setTextInteractionFlags(Qt.TextInteractionFlag.LinksAccessibleByKeyboard|Qt.TextInteractionFlag.LinksAccessibleByMouse)
+        self.label_8 = QLabel(self.content)
+        self.label_8.setObjectName(u"label_8")
+        self.label_8.setTextFormat(Qt.TextFormat.MarkdownText)
 
-        self.verticalLayout_7.addWidget(self.textBrowser)
+        self.verticalLayout_7.addWidget(self.label_8)
 
         self.widget_3 = QWidget(self.content)
         self.widget_3.setObjectName(u"widget_3")
@@ -367,19 +363,10 @@ class Ui_MainForm(object):
         self.verticalLayout_8.setSpacing(2)
         self.verticalLayout_8.setObjectName(u"verticalLayout_8")
         self.verticalLayout_8.setContentsMargins(50, 9, 50, 0)
-        self.textBrowser_2 = QTextBrowser(self.content_2)
-        self.textBrowser_2.setObjectName(u"textBrowser_2")
-        sizePolicy7 = QSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
-        sizePolicy7.setHorizontalStretch(0)
-        sizePolicy7.setVerticalStretch(0)
-        sizePolicy7.setHeightForWidth(self.textBrowser_2.sizePolicy().hasHeightForWidth())
-        self.textBrowser_2.setSizePolicy(sizePolicy7)
-        self.textBrowser_2.setMaximumSize(QSize(16777215, 90))
-        self.textBrowser_2.setMouseTracking(False)
-        self.textBrowser_2.setAcceptDrops(False)
-        self.textBrowser_2.setTextInteractionFlags(Qt.TextInteractionFlag.LinksAccessibleByKeyboard|Qt.TextInteractionFlag.LinksAccessibleByMouse)
+        self.label_9 = QLabel(self.content_2)
+        self.label_9.setObjectName(u"label_9")
 
-        self.verticalLayout_8.addWidget(self.textBrowser_2, 0, Qt.AlignmentFlag.AlignTop)
+        self.verticalLayout_8.addWidget(self.label_9)
 
 
         self.verticalLayout_3.addWidget(self.content_2)
@@ -388,8 +375,9 @@ class Ui_MainForm(object):
         self.widget.setObjectName(u"widget")
         self.widget.setStyleSheet(u"")
         self.horizontalLayout_5 = QHBoxLayout(self.widget)
+        self.horizontalLayout_5.setSpacing(0)
         self.horizontalLayout_5.setObjectName(u"horizontalLayout_5")
-        self.horizontalLayout_5.setContentsMargins(50, -1, 50, -1)
+        self.horizontalLayout_5.setContentsMargins(50, -1, 50, 0)
         self.label = QLabel(self.widget)
         self.label.setObjectName(u"label")
         font3 = QFont()
@@ -500,7 +488,7 @@ class Ui_MainForm(object):
         self.widget_2.setObjectName(u"widget_2")
         self.verticalLayout_4 = QVBoxLayout(self.widget_2)
         self.verticalLayout_4.setObjectName(u"verticalLayout_4")
-        self.verticalLayout_4.setContentsMargins(50, -1, 50, -1)
+        self.verticalLayout_4.setContentsMargins(50, 0, 50, -1)
         self.label_2 = QLabel(self.widget_2)
         self.label_2.setObjectName(u"label_2")
         self.label_2.setFont(font3)
@@ -549,6 +537,10 @@ class Ui_MainForm(object):
 
 
         self.verticalLayout_3.addWidget(self.widget_2, 0, Qt.AlignmentFlag.AlignTop)
+
+        self.verticalSpacer = QSpacerItem(20, 40, QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Expanding)
+
+        self.verticalLayout_3.addItem(self.verticalSpacer)
 
         self.btn_container_2 = QWidget(self.page_2)
         self.btn_container_2.setObjectName(u"btn_container_2")
@@ -666,11 +658,11 @@ class Ui_MainForm(object):
         self.horizontalLayout_7.setObjectName(u"horizontalLayout_7")
         self.label_7 = QLabel(self.btn_container_3)
         self.label_7.setObjectName(u"label_7")
-        sizePolicy8 = QSizePolicy(QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Preferred)
-        sizePolicy8.setHorizontalStretch(0)
-        sizePolicy8.setVerticalStretch(0)
-        sizePolicy8.setHeightForWidth(self.label_7.sizePolicy().hasHeightForWidth())
-        self.label_7.setSizePolicy(sizePolicy8)
+        sizePolicy7 = QSizePolicy(QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Preferred)
+        sizePolicy7.setHorizontalStretch(0)
+        sizePolicy7.setVerticalStretch(0)
+        sizePolicy7.setHeightForWidth(self.label_7.sizePolicy().hasHeightForWidth())
+        self.label_7.setSizePolicy(sizePolicy7)
         self.label_7.setFont(font5)
         self.label_7.setStyleSheet(u"color: rgb(255, 255, 255);")
 
@@ -705,7 +697,7 @@ class Ui_MainForm(object):
 
         self.retranslateUi(MainForm)
 
-        self.stackedWidget.setCurrentIndex(0)
+        self.stackedWidget.setCurrentIndex(1)
 
 
         QMetaObject.connectSlotsByName(MainForm)
@@ -717,17 +709,17 @@ class Ui_MainForm(object):
         self.main_title.setText(QCoreApplication.translate("MainForm", u"\u5c0f\u590f\u63a8\u9001\u7edf\u8ba1\u5de5\u5177", None))
         self.minimize_win_btn.setText(QCoreApplication.translate("MainForm", u"-", None))
         self.close_win_btn.setText(QCoreApplication.translate("MainForm", u"\u00d7", None))
-        self.textBrowser.setHtml(QCoreApplication.translate("MainForm", u"<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0//EN\" \"http://www.w3.org/TR/REC-html40/strict.dtd\">\n"
+        self.label_8.setText(QCoreApplication.translate("MainForm", u"<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0//EN\" \"http://www.w3.org/TR/REC-html40/strict.dtd\">\n"
 "<html><head><meta name=\"qrichtext\" content=\"1\" /><meta charset=\"utf-8\" /><style type=\"text/css\">\n"
 "p, li { white-space: pre-wrap; }\n"
 "hr { height: 1px; border-width: 0; }\n"
-"li.unchecked::marker { content: \"\\2610\"; }\n"
-"li.checked::marker { content: \"\\2612\"; }\n"
+"li.unchecked::marker { content: \"2610\"; }\n"
+"li.checked::marker { content: \"2612\"; }\n"
 "</style></head><body style=\" font-family:'Microsoft YaHei UI'; font-size:9pt; font-weight:400; font-style:normal;\">\n"
 "<p align=\"center\" style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-size:26pt; font-weight:700; color:#ffffff;\">\u7b2c\u4e00\u6b65  \u83b7\u53d6\u516c\u4f17\u53f7UID</span></p>\n"
-"<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-size:16pt; color:#ffffff;\">1. \u542f\u52a8\u5e76\u767b\u5f55\u7535\u8111\u7aef\u5fae\u4fe1</span></p>"
-                        "\n"
-"<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-size:16pt; color:#ffffff;\">2. \u5355\u51fb\u672c\u9875\u9762\u201c\u5f00\u59cb\u83b7\u53d6\u201d\u6309\u94ae</span></p>\n"
+"<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-size:16pt; color:#ffffff;\">1. \u542f\u52a8\u5e76\u767b\u5f55\u7535\u8111\u7aef\u5fae\u4fe1</span></p>\n"
+""
+                        "<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-size:16pt; color:#ffffff;\">2. \u5355\u51fb\u672c\u9875\u9762\u201c\u5f00\u59cb\u83b7\u53d6\u201d\u6309\u94ae</span></p>\n"
 "<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-size:16pt; color:#ffffff;\">3. \u4ece\u516c\u4f17\u53f7\u5217\u8868\u6253\u5f00\u4efb\u610f\u4e00\u7bc7\u56fe\u6587\uff08\u4e0d\u80fd\u662f\u8d34\u56fe\uff09</span></p>\n"
 "<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-size:16pt; color:#ffffff;\">4. \u8010\u5fc3\u7b49\u5f85\u83b7\u53d6\u5b8c\u6210</span></p>\n"
 "<p align=\"center\" style=\" margin-top:15px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><img src=\":/images/step_1\" width=\"600\" /></p></body></html>", None))
@@ -735,12 +727,12 @@ class Ui_MainForm(object):
         self.biz_display_label.setText(QCoreApplication.translate("MainForm", u"\u65e0", None))
         self.reget_biz_btn.setText(QCoreApplication.translate("MainForm", u"\u21bb \u91cd\u65b0\u83b7\u53d6", None))
         self.step_one_btn.setText(QCoreApplication.translate("MainForm", u"\u5f00\u59cb\u83b7\u53d6", None))
-        self.textBrowser_2.setHtml(QCoreApplication.translate("MainForm", u"<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0//EN\" \"http://www.w3.org/TR/REC-html40/strict.dtd\">\n"
+        self.label_9.setText(QCoreApplication.translate("MainForm", u"<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0//EN\" \"http://www.w3.org/TR/REC-html40/strict.dtd\">\n"
 "<html><head><meta name=\"qrichtext\" content=\"1\" /><meta charset=\"utf-8\" /><style type=\"text/css\">\n"
 "p, li { white-space: pre-wrap; }\n"
 "hr { height: 1px; border-width: 0; }\n"
-"li.unchecked::marker { content: \"\\2610\"; }\n"
-"li.checked::marker { content: \"\\2612\"; }\n"
+"li.unchecked::marker { content: \"2610\"; }\n"
+"li.checked::marker { content: \"2612\"; }\n"
 "</style></head><body style=\" font-family:'Microsoft YaHei UI'; font-size:9pt; font-weight:400; font-style:normal;\">\n"
 "<p align=\"center\" style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-size:26pt; font-weight:700; color:#ffffff;\">\u7b2c\u4e8c\u6b65  \u83b7\u53d6\u516c\u4f17\u53f7\u5386\u53f2\u6587\u7ae0\u5217\u8868</span></p>\n"
 "<p align=\"center\" style=\"-qt-paragraph-type:empty; margin-top:15px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; color:#ffffff;\"><br /></p></body></html>", None))
@@ -749,7 +741,7 @@ class Ui_MainForm(object):
         self.label_5.setText(QCoreApplication.translate("MainForm", u"   \u662f\u5426\u540c\u65f6\u7edf\u8ba1\u7a3f\u8d39", None))
         self.to_calc_fee.setText("")
         self.label_2.setText(QCoreApplication.translate("MainForm", u"2. \u70b9\u51fb\u201d\u5f00\u59cb\u83b7\u53d6\u201c\u6309\u94ae\n"
-"3. \u8bf7\u7528\u9f20\u6807\u53f3\u952e\u4ee5\u4e0b\u94fe\u63a5\u590d\u5236\u5e76\u7c98\u8d34\u5230\u5fae\u4fe1\u804a\u5929\u6253\u5f00\uff0c\u5e76\u7528\u9f20\u6807\u6eda\u8f6e\u5f80\u4e0b\u6ed1\u76f4\u5230\u51fa\u73b0\u63d0\u793a\u3002", None))
+"3. \u8bf7\u7528\u9f20\u6807\u53f3\u952e\u4ee5\u4e0b\u94fe\u63a5\u590d\u5236\u5e76\u7c98\u8d34\u5230\u5fae\u4fe1\u804a\u5929\u6253\u5f00\uff0c\u8f6f\u4ef6\u5c06\u81ea\u52a8\u83b7\u53d6\u5e76\u7edf\u8ba1\u6587\u7ae0\u5217\u8868\u3002", None))
         self.article_list_url.setText(QCoreApplication.translate("MainForm", u"[URL_HOLDER]", None))
         self.step_two_btn.setText(QCoreApplication.translate("MainForm", u"\u5f00\u59cb\u83b7\u53d6", None))
         self.label_6.setText(QCoreApplication.translate("MainForm", u"<html><head/><body><p align=\"center\"><span style=\" font-size:26pt; color:#ffffff;\">\u6b63\u5728\u63d0\u53d6\u6587\u7ae0\u6570\u636e\u4e2d\uff0c\u8bf7\u8010\u5fc3\u7b49\u5f85...</span></p><p align=\"center\"><span style=\" font-size:20pt; color:#ffffff;\">\u5982\u9047\u5f39\u51fa\u6d4f\u89c8\u5668\u4eba\u5de5\u9a8c\u8bc1\uff0c\u8bf7\u9a8c\u8bc1\u901a\u8fc7\u540e\u70b9\u51fb\u201cOK\u201d\u5373\u53ef</span></p></body></html>", None))

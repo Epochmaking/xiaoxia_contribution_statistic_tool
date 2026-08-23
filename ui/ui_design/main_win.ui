@@ -697,7 +697,7 @@ QPushButton:hover {
             <string notr="true"/>
            </property>
            <property name="currentIndex">
-            <number>0</number>
+            <number>1</number>
            </property>
            <widget class="QWidget" name="page_1">
             <property name="autoFillBackground">
@@ -714,26 +714,14 @@ QPushButton:hover {
                  <number>50</number>
                 </property>
                 <item>
-                 <widget class="QTextBrowser" name="textBrowser">
-                  <property name="mouseTracking">
-                   <bool>false</bool>
-                  </property>
-                  <property name="acceptDrops">
-                   <bool>false</bool>
-                  </property>
-                  <property name="verticalScrollBarPolicy">
-                   <enum>Qt::ScrollBarPolicy::ScrollBarAlwaysOff</enum>
-                  </property>
-                  <property name="horizontalScrollBarPolicy">
-                   <enum>Qt::ScrollBarPolicy::ScrollBarAlwaysOff</enum>
-                  </property>
-                  <property name="html">
+                 <widget class="QLabel" name="label_8">
+                  <property name="text">
                    <string>&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;&gt;
 &lt;html&gt;&lt;head&gt;&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; /&gt;&lt;meta charset=&quot;utf-8&quot; /&gt;&lt;style type=&quot;text/css&quot;&gt;
 p, li { white-space: pre-wrap; }
 hr { height: 1px; border-width: 0; }
-li.unchecked::marker { content: &quot;\2610&quot;; }
-li.checked::marker { content: &quot;\2612&quot;; }
+li.unchecked::marker { content: &quot;2610&quot;; }
+li.checked::marker { content: &quot;2612&quot;; }
 &lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:'Microsoft YaHei UI'; font-size:9pt; font-weight:400; font-style:normal;&quot;&gt;
 &lt;p align=&quot;center&quot; style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-size:26pt; font-weight:700; color:#ffffff;&quot;&gt;第一步  获取公众号UID&lt;/span&gt;&lt;/p&gt;
 &lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-size:16pt; color:#ffffff;&quot;&gt;1. 启动并登录电脑端微信&lt;/span&gt;&lt;/p&gt;
@@ -742,8 +730,8 @@ li.checked::marker { content: &quot;\2612&quot;; }
 &lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-size:16pt; color:#ffffff;&quot;&gt;4. 耐心等待获取完成&lt;/span&gt;&lt;/p&gt;
 &lt;p align=&quot;center&quot; style=&quot; margin-top:15px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;img src=&quot;:/images/step_1&quot; width=&quot;600&quot; /&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
                   </property>
-                  <property name="textInteractionFlags">
-                   <set>Qt::TextInteractionFlag::LinksAccessibleByKeyboard|Qt::TextInteractionFlag::LinksAccessibleByMouse</set>
+                  <property name="textFormat">
+                   <enum>Qt::TextFormat::MarkdownText</enum>
                   </property>
                  </widget>
                 </item>
@@ -963,39 +951,18 @@ QPushButton:hover {
                 <property name="bottomMargin">
                  <number>0</number>
                 </property>
-                <item alignment="Qt::AlignmentFlag::AlignTop">
-                 <widget class="QTextBrowser" name="textBrowser_2">
-                  <property name="sizePolicy">
-                   <sizepolicy hsizetype="Expanding" vsizetype="Minimum">
-                    <horstretch>0</horstretch>
-                    <verstretch>0</verstretch>
-                   </sizepolicy>
-                  </property>
-                  <property name="maximumSize">
-                   <size>
-                    <width>16777215</width>
-                    <height>90</height>
-                   </size>
-                  </property>
-                  <property name="mouseTracking">
-                   <bool>false</bool>
-                  </property>
-                  <property name="acceptDrops">
-                   <bool>false</bool>
-                  </property>
-                  <property name="html">
+                <item>
+                 <widget class="QLabel" name="label_9">
+                  <property name="text">
                    <string>&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;&gt;
 &lt;html&gt;&lt;head&gt;&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; /&gt;&lt;meta charset=&quot;utf-8&quot; /&gt;&lt;style type=&quot;text/css&quot;&gt;
 p, li { white-space: pre-wrap; }
 hr { height: 1px; border-width: 0; }
-li.unchecked::marker { content: &quot;\2610&quot;; }
-li.checked::marker { content: &quot;\2612&quot;; }
+li.unchecked::marker { content: &quot;2610&quot;; }
+li.checked::marker { content: &quot;2612&quot;; }
 &lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:'Microsoft YaHei UI'; font-size:9pt; font-weight:400; font-style:normal;&quot;&gt;
 &lt;p align=&quot;center&quot; style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-size:26pt; font-weight:700; color:#ffffff;&quot;&gt;第二步  获取公众号历史文章列表&lt;/span&gt;&lt;/p&gt;
 &lt;p align=&quot;center&quot; style=&quot;-qt-paragraph-type:empty; margin-top:15px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; color:#ffffff;&quot;&gt;&lt;br /&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-                  </property>
-                  <property name="textInteractionFlags">
-                   <set>Qt::TextInteractionFlag::LinksAccessibleByKeyboard|Qt::TextInteractionFlag::LinksAccessibleByMouse</set>
                   </property>
                  </widget>
                 </item>
@@ -1008,11 +975,17 @@ li.checked::marker { content: &quot;\2612&quot;; }
                 <string notr="true"/>
                </property>
                <layout class="QHBoxLayout" name="horizontalLayout_5">
+                <property name="spacing">
+                 <number>0</number>
+                </property>
                 <property name="leftMargin">
                  <number>50</number>
                 </property>
                 <property name="rightMargin">
                  <number>50</number>
+                </property>
+                <property name="bottomMargin">
+                 <number>0</number>
                 </property>
                 <item>
                  <widget class="QLabel" name="label">
@@ -1186,6 +1159,9 @@ QCheckBox::indicator:checked {
                 <property name="leftMargin">
                  <number>50</number>
                 </property>
+                <property name="topMargin">
+                 <number>0</number>
+                </property>
                 <property name="rightMargin">
                  <number>50</number>
                 </property>
@@ -1201,7 +1177,7 @@ QCheckBox::indicator:checked {
                   </property>
                   <property name="text">
                    <string>2. 点击”开始获取“按钮
-3. 请用鼠标右键以下链接复制并粘贴到微信聊天打开，并用鼠标滚轮往下滑直到出现提示。</string>
+3. 请用鼠标右键以下链接复制并粘贴到微信聊天打开，软件将自动获取并统计文章列表。</string>
                   </property>
                  </widget>
                 </item>
@@ -1370,6 +1346,19 @@ QCheckBox::indicator:checked {
                 </item>
                </layout>
               </widget>
+             </item>
+             <item>
+              <spacer name="verticalSpacer">
+               <property name="orientation">
+                <enum>Qt::Orientation::Vertical</enum>
+               </property>
+               <property name="sizeHint" stdset="0">
+                <size>
+                 <width>20</width>
+                 <height>40</height>
+                </size>
+               </property>
+              </spacer>
              </item>
              <item alignment="Qt::AlignmentFlag::AlignBottom">
               <widget class="QWidget" name="btn_container_2" native="true">

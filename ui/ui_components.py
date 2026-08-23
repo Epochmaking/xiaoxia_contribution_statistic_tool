@@ -1,4 +1,6 @@
 import os 
+import sys
+import ctypes
 from datetime import datetime
 from pathlib import Path
 from PySide6.QtWidgets import QWidget, QMessageBox, QFileDialog
@@ -192,13 +194,34 @@ class MainWindow(QWidget, Ui_MainForm):
 
         # 提示获取到的文章数量
         logger.info("获取到的文章索引: %d", len(all_articles))
-        self.index_status_msg_box.setText(f"已获取到的文章索引: 共{len(all_articles)}条。\n单击OK开始分析文章信息。")
-        self.index_status_msg_box.setStandardButtons(QMessageBox.StandardButton.Ok | QMessageBox.StandardButton.Cancel)
-        ret = self.index_status_msg_box.exec()
-        if ret == QMessageBox.StandardButton.Cancel:
-            self.step_two_btn.setText("开始获取")
-            self.step_two_btn_connection = self.step_two_btn.clicked.connect(self.step_two_btn_on_click)
-            return
+        # 先清除置顶标志再彻底关闭 msgbox，避免置顶残留影响
+        self.index_status_msg_box.setWindowFlags(
+            self.index_status_msg_box.windowFlags() & ~Qt.WindowType.WindowStaysOnTopHint
+        )
+        self.index_status_msg_box.hide()
+        self.index_status_msg_box.close()
+
+        # 强制主窗口到前台显示（处理无边框窗口在 Windows 上 raise_ 失效的问题）
+        if sys.platform == "win32":
+            try:
+                hwnd = int(self.winId())
+                SW_SHOW = 5
+                SW_RESTORE = 9
+                # 先恢复窗口（若被最小化）
+                ctypes.windll.user32.ShowWindow(hwnd, SW_RESTORE)
+                # 再显示并强制激活到前台
+                ctypes.windll.user32.ShowWindow(hwnd, SW_SHOW)
+                ctypes.windll.user32.SetForegroundWindow(hwnd)
+                ctypes.windll.user32.BringWindowToTop(hwnd)
+            except Exception as ex:  # pylint: disable=broad-exception-caught
+                logger.warning("Win32 强制前台失败，退回 Qt 原生方法: %s", ex)
+                self.showNormal()
+                self.raise_()
+                self.activateWindow()
+        else:
+            self.showNormal()
+            self.raise_()
+            self.activateWindow()
 
         # 进入下一步
         self.go_to_next_step()
