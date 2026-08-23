@@ -110,38 +110,82 @@ xiaoxia_contribution_statistic_tool/
 
 ```
 GUI (MainWindow.step_one_btn_on_click)
+  ├─► 按钮切换为"停止获取" + 置顶弹窗引导用户操作
   └─► GetMpBizThread.start()
        └─► MpBizCrawler.start()
             └─► set_network_proxy(LISTEN_HOST, LISTEN_PORT)  # 设置 Windows 全局代理
-            └─► mitmproxy DumpMaster 启动，监听 8082 端口
+            └─► _run_loop 子线程启动 asyncio 事件循环
+                 └─► mitmproxy DumpMaster 启动（0.0.0.0:8082，ssl_insecure）
+                 └─► MpBizResponseHandler 注册为 addon
+                 └─► _ready_event.set() 通知主线程初始化完成
             └─► 用户在微信客户端访问公众号，产生流量
-                 └─► MpBizResponseHandler.response()  捕获请求中的 __biz 参数
-            └─► 捕获成功后：consts.MP_BIZ = biz
-            └─► write_config({"mp_id": biz})           # 持久化到配置文件
-            └─► unset_network_proxy()                    # 关闭系统代理
-  └─► 信号 task_over(biz_result) → GUI 更新显示 + 按钮变为"下一步"
+                 └─► MpBizResponseHandler.response(flow)
+                      └─► 从 flow.request.query 中提取 "__biz"（或 "biz"）
+                      └─► self.biz_result = biz    # 保存到 handler 实例
+            └─► GetMpBizThread 轮询 get_mp_biz()，捕获到 biz 即退出循环
+            └─► finally: crawler.stop()
+                 └─► master.shutdown() 关闭 DumpMaster
+                 └─► unset_network_proxy()          # 关闭系统代理（finally 保证异常也清理）
+  └─► 信号 task_over(biz_result: str) → GUI 槽函数 get_mp_biz_task_over():
+       ├─► consts.MP_BIZ = biz_result
+       ├─► consts.ARTICLE_LIST_URL = URL_TEMPLATE.format(biz=biz_result)
+       ├─► write_config({"mp_id": biz_result})     # 持久化到配置文件
+       ├─► write_config({"uin": consts.UIN})       # 同时写入 uin
+       ├─► biz_display_label 显示 BIZ
+       ├─► reget_biz_btn.setVisible(True)
+       └─► step_one_btn 改为"下一步"，绑定 go_to_next_step 槽
 ```
 
 #### 步骤二：抓取文章列表
 
 ```
 GUI (MainWindow.step_two_btn_on_click)
+  ├─► 读取 date_edit 选择的 target_month → epoch 秒 → datetime
   └─► GetArticleListThread.start(target_time=datetime)
-       └─► ArticleListCrawler.start()
-            └─► 开启系统代理 + mitmproxy
-            └─► 用户在微信内访问历史消息页面
-                 └─► ArticleListResponseHandler 捕获分页接口 flow (action=getmsg)
-            └─► 获得模板 flow 后，跨线程调用重放：
-                 get_article_list(offset, count)
-                 └─► new_flow = template.copy()
-                 └─► new_flow.request.query["offset"] = str(offset)
-                 └─► master.commands.call("replay.client", [new_flow])
-                 └─► 解析响应 JSON → general_msg_list → list[dict]
-            └─► 循环分页：
-                 parse_and_crop_article_list(articles, target_time, offset, count)
-                 └─► 只保留目标月份内的文章
-                 └─► 解析出 title / content_url / publishing_time / type / author
-  └─► 信号 task_over(all_articles) → 弹窗确认 → 进入步骤三
+       ├─► ArticleListCrawler.start()
+       │    └─► 开启系统代理 + mitmproxy（同步骤一）
+       │    └─► ArticleListResponseHandler 注册为 addon（request 阶段钩子）
+       │    └─► 用户在微信内打开公众号"全部消息"页面
+       │         └─► 捕获 action=urlcheck 请求（重放请求用 is_replay 过滤跳过）
+       │              └─► 从 query 中保留 key / pass_ticket / appmsg_token / uin
+       │              └─► template_cookie_flow = flow.copy()
+       │
+       ├─► 轮询 has_cookie_template()：
+       │    └─► 捕获成功后 → consts.TEMPLATE_FLOW = cookie_template
+       │    └─► 信号 flow_got.emit(True) → GUI 提示用户无需继续操作
+       │
+       └─► 循环分页拉取（在 GetArticleListThread.run 内实现，而非 Crawler 内）：
+            offset=0, count=10, page_num=1
+            while count != 0:
+              ├─► sleep(FETCH_INTERVAL_S + random_jitter)   # 防风控随机间隔
+              ├─► for _ in range(MAX_RETRIES):              # 每页最多重试 MAX_RETRIES 次
+              │    └─► crawler.get_article_list(offset, count):
+              │         ├─► 从 cookie_template 提取 key / pass_ticket / appmsg_token / uin
+              │         ├─► new_flow = cookie_template.copy()   # 保留 cookie / headers
+              │         ├─► new_flow.request.path = "/mp/profile_ext"
+              │         ├─► new_flow.request.query.clear()      # 清空 urlcheck 原参数
+              │         ├─► 重新构造完整 getmsg 参数：
+              │         │    action=getmsg, __biz, f=json, offset, count,
+              │         │    is_ok=1, scene, uin, key, pass_ticket, wxtoken, appmsg_token, x5=0
+              │         ├─► new_flow.request.method = "GET"
+              │         ├─► run_async(_replay_and_wait(new_flow, timeout))
+              │         │    └─► master.commands.call("replay.client", [new_flow])
+              │         │    └─► 以 100ms 间隔轮询 new_flow.response 填充（10s 超时）
+              │         ├─► 解析响应 JSON → general_msg_list → list[dict]
+              │         └─► 失败返回 None，触发外层重试
+              ├─► articles 为 None 则 break 跳出
+              ├─► count = len(articles)
+              ├─► offset, count = parse_and_crop_article_list(articles, target_time, offset, count):
+              │    └─► 逐篇比较 datetime.month 与 target_month：
+              │         晚于目标月 → 删除
+              │         早于目标月 → 删除 + 设置 to_stop=True（返回 0,0 终止循环）
+              │         等于目标月 → parse_article 解析出 title / content_url / publishing_time / type / author
+              │         author 为空时按 type 兜底为"小绿书"或"转载"
+              ├─► all_articles.extend(articles)
+              └─► 信号 report_index.emit(len(all_articles)) → GUI 实时显示已抓数量
+  └─► 信号 task_over(all_articles) → GUI 槽函数 get_article_list_task_over():
+       ├─► len==0 时弹窗"终止获取"，按钮回退为"开始获取"
+       └─► len>0 时弹窗确认文章数量 → 用户确认后进入步骤三
 ```
 
 #### 步骤三：文章内容爬取（含人机验证，三阶段流水线）
