@@ -152,7 +152,6 @@ class MainWindow(QWidget, Ui_MainForm):
 
         # 写入至配置文件并更新到“已获取biz”当中
         write_config({"mp_id": biz_result})
-        write_config({"uin": consts.UIN})
         self.biz_display_label.setText(biz_result)
 
         # 显示重新获取按钮
