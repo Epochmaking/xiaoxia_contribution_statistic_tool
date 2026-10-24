@@ -1,6 +1,22 @@
-from PySide6.QtWidgets import QTableView, QHeaderView
+from PySide6.QtWidgets import QTableView, QHeaderView, QFrame, QLayout, QGraphicsDropShadowEffect
 from PySide6.QtCore import Qt
+from PySide6.QtGui import QColor
 from models.ui_models import ArticleListViewModel, HyperlinkDelegate
+
+
+def apply_frame_shadow(frame: QFrame, outer_layout: QLayout,
+                       blur_radius: int = 35, offset_x: int = 0, offset_y: int = 6,
+                       color: QColor | None = None, margin: int = 18) -> QGraphicsDropShadowEffect:
+    """给无边框透明窗口的内部框架添加投影阴影"""
+    shadow = QGraphicsDropShadowEffect(frame)
+    shadow.setBlurRadius(blur_radius)
+    shadow.setOffset(offset_x, offset_y)
+    shadow.setColor(color or QColor(0, 0, 0, 150))
+    frame.setGraphicsEffect(shadow)
+    # 给外层布局留出边距，否则阴影会被窗口边缘裁剪
+    outer_layout.setContentsMargins(margin, margin, margin, margin)
+    return shadow
+
 
 def set_article_confirm_table(article_confirm_table: QTableView, all_articles: list[dict] | None = None, to_calc_fee: bool = False):
     """设置文章确认表格"""

@@ -28,7 +28,7 @@
      </property>
      <property name="styleSheet">
       <string notr="true">QFrame {
-	background-color: rgb(85, 85, 85);
+	background-color: rgb(54, 54, 54);
 	border-radius: 15px;
 }</string>
      </property>
@@ -58,11 +58,12 @@
        <widget class="QWidget" name="widget" native="true">
         <property name="styleSheet">
          <string notr="true">QLineEdit {
-    border: 1px solid #888888;
-    border-radius: 8px;
-    background-color: #ffffff;
+    border: 1px solid #666666;
+    border-radius: 5px;
+    background-color: rgb(70, 70, 70);
     padding: 1px;
     font-size: 14px;
+	color: #ffffff;
 }
 
 QLabel {
@@ -397,7 +398,7 @@ QLabel {
             <item row="0" column="0">
              <widget class="QLabel" name="label_12">
               <property name="text">
-               <string>智谱大模型 API KEY</string>
+               <string>智谱大模型 API KEY    </string>
               </property>
              </widget>
             </item>
@@ -418,53 +419,54 @@ QLabel {
               </property>
               <property name="styleSheet">
                <string notr="true">QTextEdit {
-border: 1px solid #888888;
-border-radius: 8px; /* 外层圆角 */
-background-color: #ffffff;
-padding: 2px;
-font-size: 14px;
+    border: 1px solid #666666;
+    border-radius: 5px;
+    background-color: rgb(70, 70, 70);
+    padding: 2px;
+    font-size: 14px;
+    color: #ffffff;
 }
 
 QTextEdit QWidget#qt_scrollarea_viewport {
-background-color: rgb(255, 255, 255);
-border-radius: 8px; 
+    background-color: rgb(70, 70, 70);
+    border-radius: 8px;
 }
 
-/* 垂直滚动条整体 */
-        QTextEdit QScrollBar:vertical {
-            background-color: #F7F8FA;
-            width: 10px;
-            margin: 0px 0px 0px 0px;
-        }
+/* 垂直滚动条整体：重点改这里！背景改成深色，去掉原生边框 */
+QTextEdit QScrollBar:vertical {
+    background-color: rgb(70, 70, 70);
+    border: none;
+    width: 10px;
+    margin: 0px 0px 0px 0px;
+}
 
-        /* 滚动条滑块（未按下） */
-        QTextEdit QScrollBar::handle:vertical {
-            background-color: #C8CCD1;
-            min-height: 20px;
-            min-width: 20px;
-            border-radius: 5px;
-            margin: 2px 2px 2px 2px;
-        }
-        /* 滚动条滑块（鼠标悬浮） */
-        QTextEdit QScrollBar::handle:vertical:hover {
-            background-color: #A8ADB5;
-        }
-        /* 滚动条滑块（按下） */
-        QTextEdit QScrollBar::handle:vertical:pressed {
-            background-color: #8D9299;
-        }
-        /* 滚动条上下/左右箭头按钮 */
-        QTextEdit QScrollBar::add-line:vertical,
-        QTextEdit QScrollBar::sub-line:vertical{
-            background: none;
-            width: 0px;
-            height: 0px;
-        }
-        /* 滚动条两端的空白区域（点击可以跳转） */
-        QTextEdit QScrollBar::add-page:vertical,
-        QTextEdit QScrollBar::sub-page:vertical{
-            background-color: #F7F8FA;
-        }</string>
+/* 滚动条滑块（未按下） */
+QTextEdit QScrollBar::handle:vertical {
+    background-color: #666666;
+    min-height: 20px;
+    border-radius: 5px;
+}
+/* 滚动条滑块（鼠标悬浮） */
+QTextEdit QScrollBar::handle:vertical:hover {
+    background-color: #A8ADB5;
+}
+/* 滚动条滑块（按下） */
+QTextEdit QScrollBar::handle:vertical:pressed {
+    background-color: #8D9299;
+}
+/* 滚动条上下箭头 */
+QTextEdit QScrollBar::add-line:vertical,
+QTextEdit QScrollBar::sub-line:vertical{
+    background: none;
+    width: 0px;
+    height: 0px;
+}
+/* 滚动条上下空白轨道 */
+QTextEdit QScrollBar::add-page:vertical,
+QTextEdit QScrollBar::sub-page:vertical{
+    background-color: rgb(70, 70, 70);
+}
+</string>
               </property>
              </widget>
             </item>

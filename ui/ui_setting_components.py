@@ -7,6 +7,7 @@ from PySide6.QtGui import (
 from PySide6.QtCore import QRegularExpression
 
 from ui.ui_compiled.setting_win import Ui_Form
+from ui.ui_helper import apply_frame_shadow
 from helpers.config_helper import read_config, write_config
 
 from utils.logging import get_logger
@@ -53,6 +54,7 @@ class SettingWindow(QWidget, Ui_Form):
         self.setWindowFlags(Qt.WindowType.FramelessWindowHint)  # 1. 设置窗口标志：无边框
         self.setAttribute(Qt.WidgetAttribute.WA_TranslucentBackground) # 2. 设置背景透明（必须和无边框一起用）
         self.setupUi(self)
+        apply_frame_shadow(self.setting_frame, self.verticalLayout)
         self._setup_validators()
 
         # 用于拖动窗口

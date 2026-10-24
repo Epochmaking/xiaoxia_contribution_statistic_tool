@@ -1012,6 +1012,8 @@ li.checked::marker { content: &quot;2612&quot;; }
                   <property name="styleSheet">
                    <string notr="true">QDateEdit {
 	font-size: 16px;
+	color: #ffffff;
+	background-color: rgb(70, 70, 70);
 }
 
 /*标题栏的样式*/
@@ -1082,7 +1084,7 @@ QCalendarWidget QAbstractItemView:disabled
                    <string notr="true">color: rgb(255, 255, 255);</string>
                   </property>
                   <property name="text">
-                   <string>   是否同时统计稿费</string>
+                   <string>   是否同时统计稿费 </string>
                   </property>
                  </widget>
                 </item>
@@ -1104,28 +1106,48 @@ QCalendarWidget QAbstractItemView:disabled
                    <string notr="true">QCheckBox {
     font-size: 12px;
     color: #333333;
-    spacing: 8px; /* 方框和文字间距 */
+    spacing: 8px;
 }
-/* 复选框方框基础 */
+
 QCheckBox::indicator {
     width: 18px;
     height: 18px;
-    border: 3px solid #666666;
-    border-radius: 4px; /* 圆角方框 */
-    border-color: rgb(212, 212, 212);
+    border: 2px solid #666666;
+    border-radius: 4px;
     background-color: white;
 }
-/* 鼠标悬浮未选中 */
+
 QCheckBox::indicator:hover {
     border-color: rgb(6, 173, 86);
 }
-/* 选中状态：绿色背景+绿色边框，原生白色对勾自动出现 */
+
+QCheckBox::indicator:pressed {
+    border-color: rgb(4, 145, 72);
+    background-color: #f0f0f0;
+}
+
 QCheckBox::indicator:checked {
     border-color: rgb(6, 173, 86);
     background-color: rgb(6, 173, 86);
-    /* 替换image，使用Qt内置勾选符号，白色 */
-    border-image: none;
     image: url(&quot;:/images/checkmark_white&quot;);
+}
+
+QCheckBox::indicator:checked:hover {
+    background-color: rgb(5, 158, 78);
+    border-color: rgb(5, 158, 78);
+}
+
+QCheckBox::indicator:checked:pressed {
+    background-color: rgb(4, 140, 68);
+    border-color: rgb(4, 140, 68);
+}
+
+QCheckBox::indicator:disabled {
+    border-color: #cccccc;
+    background-color: #eeeeee;
+}
+QCheckBox:disabled {
+    color: #999999;
 }
 </string>
                   </property>
@@ -1478,22 +1500,17 @@ QPushButton:hover {
                <property name="styleSheet">
                 <string notr="true">QProgressBar {
     /* 整体进度条背景（未填充区域） */
-    background-color: #cccccc;
+    background-color: #666666;
     border-radius: 4px;    /* 圆角 */
     height: 6px;          /* 进度条高度 */
-    text-align: right;    /* 文字居中 */
+    text-align: right;    /* 文字居右 */
+	color: #ffffff
 }
 
 /* 进度填充区域 */
 QProgressBar::chunk {
     background-color: rgb(6, 173, 86);
     border-radius: 4px;
-}
-
-/* 进度文字颜色 */
-QProgressBar::text {
-    color: #ffffff;
-    font-size: 8px;
 }</string>
                </property>
                <property name="value">
