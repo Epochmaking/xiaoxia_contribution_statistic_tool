@@ -23,6 +23,8 @@ class Article(Base):
     heart_count: Mapped[int] = mapped_column(Integer, nullable=True, default=None)
     share_count: Mapped[int] = mapped_column(Integer, nullable=True, default=None)
     collect_count: Mapped[int] = mapped_column(Integer, nullable=True, default=None)
+    is_successfully_parsed: Mapped[bool] = mapped_column(Boolean, index=True, default=False)
+    is_successfully_formatted: Mapped[bool] = mapped_column(Boolean, index=True, default=False)
 
 class Creator(Base):
     """

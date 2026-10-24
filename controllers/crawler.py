@@ -162,10 +162,6 @@ class ArticleListCrawler(Crawler):
     def get_cookie_template(self) -> http.HTTPFlow | None:
         """获取包含cookie的模板 flow"""
         return self.response_handler.template_cookie_flow
-    
-    def get_template(self) -> http.HTTPFlow | None:
-        """获取文章列表模板 flow（兼容旧接口，返回cookie模板）"""
-        return self.get_cookie_template()
 
     async def _replay_and_wait(self, new_flow: http.HTTPFlow, timeout_s: float = 10.0) -> http.HTTPFlow | None:
         assert self.master is not None

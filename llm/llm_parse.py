@@ -20,12 +20,15 @@ HEADERS = {
     "Content-Type": "application/json"
 }
 
-def llm_request(system_prompt: str, user_prompt: str, temperature: float = 0.1, response_format: str = "text") -> str:
+def llm_request(system_prompt: str, user_prompt: str,
+                temperature: float = 0.1, response_format: str = "text",
+                retry_cb=None) -> tuple[str, bool]:
     """
     调用LLM模型，返回模型回复
     :param system_prompt: 系统提示
     :param user_prompt: 用户提示
     :param temperature: 温度参数，0.1-0.9之间
+    :param retry_cb: 重试回调，签名 retry_cb(attempt: int, max_attempts: int) -> None
     :return: 模型回复
     """
 
@@ -49,27 +52,33 @@ def llm_request(system_prompt: str, user_prompt: str, temperature: float = 0.1, 
 
     logger.info("开始调用模型")
 
-    MAX_MODEL_RETRIES = MAX_LLM_RETRIES // 2
-    MAX_BACKUP_MODEL_RETRIES = MAX_LLM_RETRIES - MAX_MODEL_RETRIES
+    MAX_MODEL_RETRIES = MAX_LLM_RETRIES // 2 # pylint: disable=invalid-name
+    MAX_BACKUP_MODEL_RETRIES = MAX_LLM_RETRIES - MAX_MODEL_RETRIES # pylint: disable=invalid-name
 
+    is_success = False
     for i in range(MAX_MODEL_RETRIES):
         try:
             response = requests.post(LLM_URL, headers=HEADERS, json=payload, timeout=MAX_TIMEOUT_S)
             if response.status_code == 200:
                 result = response.json()["choices"][0]["message"]["content"]
                 logger.info(f"LLM模型调用成功，调用模型： {MODEL}, 回复： {result}")
-                return result
+                is_success = True
+                return result, is_success
             else:
                 logger.warning(f"LLM模型调用失败，状态码： {response.status_code}")
                 logger.info(f"第 {i + 1} 次重试")
+                if retry_cb is not None:
+                    retry_cb(i + 1, MAX_LLM_RETRIES)
                 time.sleep(LLM_FETCH_INTERVAL_S)
                 continue
         except requests.exceptions.RequestException as e:
             logger.warning(f"LLM模型调用失败，异常信息：{e}")
             if BACKUP_MODEL is None:
                 logger.error("备用模型未配置，无法重试")
-                return ""
+                return "", is_success
             logger.info(f"第 {i + 1} 次重试")
+            if retry_cb is not None:
+                retry_cb(i + 1, MAX_LLM_RETRIES)
             time.sleep(LLM_FETCH_INTERVAL_S)
             continue
 
@@ -82,23 +91,28 @@ def llm_request(system_prompt: str, user_prompt: str, temperature: float = 0.1, 
             if response.status_code == 200:
                 result = response.json()["choices"][0]["message"]["content"]
                 logger.info(f"备用模型调用成功，调用模型： {BACKUP_MODEL}, 回复： {result}")
-                return result
-            else:
-                logger.warning(f"备用模型调用失败，状态码： {response.status_code}")
-                logger.info(f"第 {i + 1 + MAX_MODEL_RETRIES} 次重试")
-                time.sleep(LLM_FETCH_INTERVAL_S)
-                continue
+                is_success = True
+                return result, is_success
+            logger.warning(f"备用模型调用失败，状态码： {response.status_code}")
+            logger.info(f"第 {i + 1 + MAX_MODEL_RETRIES} 次重试")
+            if retry_cb is not None:
+                retry_cb(MAX_MODEL_RETRIES + i + 1, MAX_LLM_RETRIES)
+            time.sleep(LLM_FETCH_INTERVAL_S)
+            continue
         except requests.exceptions.RequestException as e:
             logger.warning(f"备用模型调用失败，异常信息：{e}")
+            if retry_cb is not None:
+                retry_cb(MAX_MODEL_RETRIES + i + 1, MAX_LLM_RETRIES)
 
     logger.error("所有模型调用失败")
-    return ""
+    return "", is_success
 
 
-def parse_creator_list_by_llm(content: str) -> str:
+def parse_creator_list_by_llm(content: str, retry_cb=None) -> tuple[str, bool]:
     """
     解析文章内容中的作者列表
     :param content: 文章内容
+    :param retry_cb: 重试回调，签名 retry_cb(attempt: int, max_attempts: int) -> None
     :return: 作者列表字符串
     """
     system_prompt = """
@@ -144,15 +158,16 @@ def parse_creator_list_by_llm(content: str) -> str:
     """
 
     user_prompt = f"待提取的公众号文末原文：\n{content}"
-    creator_list = llm_request(system_prompt, user_prompt, temperature=0.3, response_format="text")
+    creator_list, is_success = llm_request(system_prompt, user_prompt, temperature=0.3, response_format="text", retry_cb=retry_cb)
     if creator_list == "None":
-        return ""
-    return creator_list
+        return "", is_success
+    return creator_list, is_success
 
-def format_creator_list_by_llm(creator_list: str) -> dict[str, list[str]]:
+def format_creator_list_by_llm(creator_list: str, retry_cb=None) -> tuple[dict[str, list[str]], bool]:
     """
     格式化作者列表字符串为字典
     :param creator_list: 作者列表字符串
+    :param retry_cb: 重试回调，签名 retry_cb(attempt: int, max_attempts: int) -> None
     :return: 作者列表字典
     """
 
@@ -207,7 +222,9 @@ def format_creator_list_by_llm(creator_list: str) -> dict[str, list[str]]:
     """
 
     user_prompt = f"请处理下面的落款文本，按规则输出纯JSON：\n{creator_list}"
-    formatted_creator_list = llm_request(system_prompt, user_prompt, temperature=0.3, response_format="json_object")
+    formatted_creator_list, is_success = llm_request(system_prompt, user_prompt,
+                                         temperature=0.3, response_format="json_object",
+                                         retry_cb=retry_cb)
 
     try:
         json_text = formatted_creator_list.strip()
@@ -225,4 +242,4 @@ def format_creator_list_by_llm(creator_list: str) -> dict[str, list[str]]:
     except json.JSONDecodeError:
         formatted_creator_list = {}
 
-    return formatted_creator_list
+    return formatted_creator_list, is_success

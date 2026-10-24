@@ -202,6 +202,10 @@ class GetArticleContentThread(QThread):
         self._format_done = 0   # Stage3 已完成并写入DB数（主进度）
         self._total_count = 0
 
+        # LLM 重试状态追踪（worker_id -> {"title", "attempt", "max", "stage"}）
+        self._retry_lock = threading.Lock()
+        self._retry_state: dict[int, dict] = {}
+
         # 内部线程句柄
         self._browser_th: threading.Thread | None = None
         self._parse_workers: list[threading.Thread] = []
@@ -235,20 +239,35 @@ class GetArticleContentThread(QThread):
                 skip = item.get("skip", False)
 
                 creator_list_str = ""
+                parse_success = False
                 if not skip and crop_text:
                     try:
-                        creator_list_str = parse_creator_list_by_llm(crop_text)
+                        def _parse_retry_cb(attempt, max_attempts):
+                            with self._retry_lock:
+                                self._retry_state[worker_id] = {
+                                    "title": title,
+                                    "attempt": attempt,
+                                    "max": max_attempts,
+                                    "stage": "解析",
+                                }
+
+                        creator_list_str, parse_success = parse_creator_list_by_llm(crop_text, retry_cb=_parse_retry_cb)
                     except Exception as ex:  # pylint: disable=broad-exception-caught
                         logger.warning(
                             f"[Stage2 Worker-{worker_id}] 解析作者清单异常，文章《{title}》: {ex}"
                         )
                         creator_list_str = ""
+                        parse_success = False
+                    finally:
+                        with self._retry_lock:
+                            self._retry_state.pop(worker_id, None)
 
                 self._parsed_queue.put({
                     "article_id": article_id,
                     "title": title,
                     "reader_stats": reader_stats,
                     "creator_list_str": creator_list_str,
+                    "parse_success": parse_success,
                     "skip": skip,
                     "skip_reason": item.get("skip_reason", ""),
                 })
@@ -279,17 +298,32 @@ class GetArticleContentThread(QThread):
                 title = item["title"]
                 reader_stats = item["reader_stats"]
                 creator_list_str = item["creator_list_str"]
+                parse_success = item.get("parse_success", False)
                 skip = item.get("skip", False)
 
                 formatted_creator_dict: dict = {}
+                format_success = False
                 if not skip and creator_list_str and self.to_calc_fee:
                     try:
-                        formatted_creator_dict = format_creator_list_by_llm(creator_list_str)
+                        def _format_retry_cb(attempt, max_attempts):
+                            with self._retry_lock:
+                                self._retry_state[worker_id] = {
+                                    "title": title,
+                                    "attempt": attempt,
+                                    "max": max_attempts,
+                                    "stage": "格式化",
+                                }
+
+                        formatted_creator_dict, format_success = format_creator_list_by_llm(creator_list_str, retry_cb=_format_retry_cb)
                     except Exception as ex:  # pylint: disable=broad-exception-caught
                         logger.warning(
                             f"[Stage3 Worker-{worker_id}] 格式化作者JSON异常，文章《{title}》: {ex}"
                         )
                         formatted_creator_dict = {}
+                        format_success = False
+                    finally:
+                        with self._retry_lock:
+                            self._retry_state.pop(worker_id, None)
 
                 try:
                     with get_session() as db_session:
@@ -304,6 +338,8 @@ class GetArticleContentThread(QThread):
                             target.formatted_creators_list = json.dumps(
                                 formatted_creator_dict, ensure_ascii=False
                             )
+                            target.is_successfully_parsed = parse_success
+                            target.is_successfully_formatted = format_success
                             db_session.commit()
                             logger.info(
                                 f"[Stage3 Worker-{worker_id}] 更新成功 ID:{article_id}, 题目：《{title}》\n"
@@ -338,16 +374,23 @@ class GetArticleContentThread(QThread):
                 fmt = self._format_done
                 total = self._total_count
             browser_done = self._raw_queue.put_count()
-            raw_qsize = self._raw_queue.qsize()
-            parsed_qsize = self._parsed_queue.qsize()
+
+            with self._retry_lock:
+                retrying = list(self._retry_state.values())
 
             if total > 0:
                 msg = (
                     f"文章内容 {browser_done}/{total} 已获取 · "
                     f"作者解析 {parse_d}/{total} · "
-                    f"格式化入库 {fmt}/{total} | "
-                    f"[待解析队列:{raw_qsize} · 待格式化队列:{parsed_qsize}]"
+                    f"格式化入库 {fmt}/{total}"
                 )
+                if retrying:
+                    latest = retrying[-1]
+                    abbr_title = latest["title"][:6] + "..." if len(latest["title"]) > 6 else latest["title"] # 截断标题防止过长
+                    msg += (
+                        f" | 重试解析({len(retrying)}项): "
+                        f"《{abbr_title}》第{latest['attempt']}/{latest['max']}次[{latest['stage']}]"
+                    )
                 self.report_progress.emit(fmt, total, msg)
             if total > 0 and fmt >= total:
                 break

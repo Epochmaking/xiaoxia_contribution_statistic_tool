@@ -34,6 +34,7 @@ class ArticleListViewModel(QStandardItemModel):
                 raise e
  
         # 拷贝一份列顺序到实例级别，避免修改类属性导致的跨实例互相影响
+        self.to_calc_fee = to_calc_fee
         column_order = list(self.COLUMN_ORDER)
         if not to_calc_fee and "formatted_creators_list" in column_order:
             column_order.remove("formatted_creators_list")
@@ -77,7 +78,10 @@ class ArticleListViewModel(QStandardItemModel):
                             item.setTextAlignment(Qt.AlignmentFlag.AlignCenter | Qt.AlignmentFlag.AlignVCenter)
 
                 elif key == "author":
-                    item.setText(str(article.get(key, "")))
+                    if not article.get("is_successfully_parsed", False):
+                        item.setText("解析失败")
+                    else:
+                        item.setText(str(article.get(key, "")))
                     item.setTextAlignment(Qt.AlignmentFlag.AlignCenter | Qt.AlignmentFlag.AlignVCenter)
 
                 elif key == "type":
@@ -98,14 +102,17 @@ class ArticleListViewModel(QStandardItemModel):
                     item.setTextAlignment(Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignVCenter)
 
                 elif key == "formatted_creators_list":
-                    formatted_creators_list = article.get(key, "")
-                    if formatted_creators_list:
-                        try:
-                            parsed = json.loads(formatted_creators_list)
-                            formatted_creators_list = pretty_json(parsed, indent=2)
-                        except json.JSONDecodeError:
-                            pass
-                    item.setText(formatted_creators_list)
+                    if self.to_calc_fee and not article.get("is_successfully_formatted", False):
+                        item.setText("解析失败")
+                    else:
+                        formatted_creators_list = article.get(key, "")
+                        if formatted_creators_list:
+                            try:
+                                parsed = json.loads(formatted_creators_list)
+                                formatted_creators_list = pretty_json(parsed, indent=2)
+                            except json.JSONDecodeError:
+                                pass
+                        item.setText(formatted_creators_list)
                     item.setTextAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter)
 
                 else:

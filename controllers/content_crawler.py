@@ -237,21 +237,6 @@ class ContentCrawler:
             reader_stats = get_reader_stats(page.url, consts.TEMPLATE_FLOW)
         return crop_text, reader_stats
 
-    def parse_article_data(self, page: Page, to_calc_fee: bool):
-        """页面解析逻辑：提取落款、阅读量等信息（保留用于兼容旧逻辑）"""
-        crop_text, reader_stats = self.extract_raw_page_data(page)
-        creator_list = parse_creator_list_by_llm(crop_text)
-        formatted_creator_list = format_creator_list_by_llm(creator_list) if to_calc_fee else {}
-        return {
-            "view_count": reader_stats.get("view_count", 0), # 阅读量
-            "heart_count": reader_stats.get("heart_count", 0), # 爱心量
-            "like_count": reader_stats.get("like_count", 0), # 在看量
-            "share_count": reader_stats.get("share_count", 0), # 分享量
-            "collect_count": reader_stats.get("collect_count", 0), # 收藏量
-            "creator_list": creator_list,
-            "formatted_creator_list": formatted_creator_list,
-        }
-    
     def crawl_pages_for_pipeline(self, article_list: list[Article], raw_queue, stop_flag, progress_cb, verify_cb, log_cb):
         """
         【流水线模式 Stage 1】仅负责浏览器页面爬取（单线程防反爬）。
