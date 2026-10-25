@@ -16,9 +16,9 @@ max_retries=3 # 最大重试次数\n
 fetch_interval_s=2 # 每次请求间隔，单位秒，不要调太低防止被微信反爬虫拦截封禁\n
 
 max_llm_retries=99 # 最大语言模型重试次数（用于识别落款信息）\n
-llm_fetch_interval_s=1.5 # 每次语言模型调用请求间隔，单位秒\n
+llm_fetch_interval_s=2 # 每次语言模型调用请求间隔，单位秒\n
 glm_api_key='00ebdd968b7742babfa0a6e04b33a0e4.ZrdN0x9z5M5dbNsq' # GLM API密钥\n
-glm_model='glm-4.7-flash' # 首选glm-4.7-flash模型\n
+glm_model='glm-5.3-flash' # 首选glm-4.7-flash模型\n
 glm_backup_model='glm-4-flash' # 备选模型glm-4-flash\n
 
 xiaoxia_members='' # 小夏成员名单，成员间用逗号隔开不要换行，如为空则默认所有人都是小夏\n
@@ -26,6 +26,9 @@ fee_base=100 # 稿费基数，单位元\n
 
 first_open=1 # 是否是第一次打开软件，用于提示用户配置\n
 """
+
+# 必须开启思考的模型
+THINKING_MODELS = ["glm-5.3-flash"]
 
 TEMP_PATH = Path(tempfile.gettempdir()) / "xiaoxia_contribution_statistic_tool"
 TEMP_CONTEXT_DIR = TEMP_PATH / "temp_context"
@@ -92,4 +95,5 @@ __all__ = [
     "XIAOXIA_MEMBERS",
     "FEE_BASE",
     "FIRST_OPEN",
+    "THINKING_MODELS",
 ]

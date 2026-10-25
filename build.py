@@ -6,8 +6,8 @@ from utils.logging import get_logger
 
 logger = get_logger(__name__)
 
-FILE_VERSION = "1.3.0.0"
-PRODUCT_VERSION = "1.3.0.0"
+FILE_VERSION = "1.3.1.0"
+PRODUCT_VERSION = "1.3.1.0"
 BROWSER_DIR = ".local-browsers=playwright\\driver\\package\\.local-browsers"
 
 def main():

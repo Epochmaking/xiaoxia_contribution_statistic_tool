@@ -1,9 +1,22 @@
+import io
 import os
 import dotenv
 from utils.logging import get_logger
 
 
 logger = get_logger("config_setting")
+
+
+def read_default_config() -> dict[str, str]:
+    """
+    从 constants.DEFAULT_CONFIG 中读取默认配置值
+
+    Returns:
+        dict[str, str]: 默认配置键值对
+    """
+    from constants.constants import DEFAULT_CONFIG  # pylint: disable=import-outside-toplevel
+    defaults = dotenv.dotenv_values(stream=io.StringIO(DEFAULT_CONFIG))
+    return {k: v for k, v in defaults.items() if v is not None}
 
 def read_config(key: str, default: str | None = None) -> str | None:
     """

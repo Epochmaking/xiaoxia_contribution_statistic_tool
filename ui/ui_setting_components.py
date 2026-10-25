@@ -8,7 +8,7 @@ from PySide6.QtCore import QRegularExpression
 
 from ui.ui_compiled.setting_win import Ui_Form
 from ui.ui_helper import apply_frame_shadow
-from helpers.config_helper import read_config, write_config
+from helpers.config_helper import read_config, write_config, read_default_config
 
 from utils.logging import get_logger
 
@@ -224,33 +224,20 @@ class SettingWindow(QWidget, Ui_Form):
     def set_default_settings(self):
         """恢复默认设置（与 constants.py 的 DEFAULT_CONFIG 保持一致）"""
         logger.info("恢复默认设置")
-        defaults = {
-            "listen_port": "8082",
-            "max_article_count_per_request": "10",
-            "max_timeout_s": "6",
-            "max_retries": "3",
-            "fetch_interval_s": "2",
-            "max_llm_retries": "99",
-            "llm_fetch_interval_s": "1.5",
-            "glm_api_key": "00ebdd968b7742babfa0a6e04b33a0e4.ZrdN0x9z5M5dbNsq",
-            "glm_model": "glm-4.7",
-            "glm_backup_model": "glm-5",
-            "xiaoxia_members": "",
-            "fee_base": "100",
-        }
-        self.listen_port.setText(defaults["listen_port"])
-        self.max_article_count_per_request.setText(defaults["max_article_count_per_request"])
-        self.max_timeout_s.setText(defaults["max_timeout_s"])
-        self.max_retries.setText(defaults["max_retries"])
-        self.fetch_interval_s.setText(defaults["fetch_interval_s"])
-        self.max_llm_retries.setText(defaults["max_llm_retries"])
-        self.llm_fetch_interval_s.setText(defaults["llm_fetch_interval_s"])
-        self.glm_api_key.setText(defaults["glm_api_key"])
-        self.glm_model.setText(defaults["glm_model"])
-        self.glm_backup_model.setText(defaults["glm_backup_model"])
+        defaults = read_default_config()
+        self.listen_port.setText(defaults.get("listen_port", ""))
+        self.max_article_count_per_request.setText(defaults.get("max_article_count_per_request", ""))
+        self.max_timeout_s.setText(defaults.get("max_timeout_s", ""))
+        self.max_retries.setText(defaults.get("max_retries", ""))
+        self.fetch_interval_s.setText(defaults.get("fetch_interval_s", ""))
+        self.max_llm_retries.setText(defaults.get("max_llm_retries", ""))
+        self.llm_fetch_interval_s.setText(defaults.get("llm_fetch_interval_s", ""))
+        self.glm_api_key.setText(defaults.get("glm_api_key", ""))
+        self.glm_model.setText(defaults.get("glm_model", ""))
+        self.glm_backup_model.setText(defaults.get("glm_backup_model", ""))
         # QTextEdit 使用 setPlainText
-        self.xiaoxia_members.setPlainText(defaults["xiaoxia_members"])
-        self.fee_base.setText(defaults["fee_base"])
+        self.xiaoxia_members.setPlainText(defaults.get("xiaoxia_members", ""))
+        self.fee_base.setText(defaults.get("fee_base", ""))
 
     # 鼠标按下
     # pylint: disable=invalid-name

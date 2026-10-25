@@ -2,7 +2,8 @@ import time
 import json
 import requests
 
-from constants import GLM_API_KEY, MAX_LLM_RETRIES, LLM_MODEL, LLM_BACKUP_MODEL, MAX_TIMEOUT_S, LLM_FETCH_INTERVAL_S
+from constants import (GLM_API_KEY, MAX_LLM_RETRIES, LLM_MODEL, LLM_BACKUP_MODEL,
+                       MAX_TIMEOUT_S, LLM_FETCH_INTERVAL_S, THINKING_MODELS)
 from utils.logging import get_logger
 
 logger = get_logger(__name__)
@@ -50,6 +51,13 @@ def llm_request(system_prompt: str, user_prompt: str,
         "response_format": { "type": response_format }
     }
 
+    if MODEL in THINKING_MODELS:
+        payload["thinking"]["type"] = "enabled"
+        payload["reasoning_effort"] = "low"
+    else:
+        payload["thinking"]["type"] = "disabled"
+        payload.pop("reasoning_effort", None)
+
     logger.info("开始调用模型")
 
     MAX_MODEL_RETRIES = MAX_LLM_RETRIES // 2 # pylint: disable=invalid-name
@@ -65,7 +73,7 @@ def llm_request(system_prompt: str, user_prompt: str,
                 is_success = True
                 return result, is_success
             else:
-                logger.warning(f"LLM模型调用失败，状态码： {response.status_code}")
+                logger.warning(f"LLM模型调用失败，状态码： {response.status_code}, 响应内容：{response.json()["error"]["message"]}")
                 logger.info(f"第 {i + 1} 次重试")
                 if retry_cb is not None:
                     retry_cb(i + 1, MAX_LLM_RETRIES)
@@ -84,6 +92,12 @@ def llm_request(system_prompt: str, user_prompt: str,
 
     # 尝试备用模型
     payload["model"] = BACKUP_MODEL
+    if BACKUP_MODEL in THINKING_MODELS:
+        payload["thinking"]["type"] = "enabled"
+        payload["reasoning_effort"] = "low"
+    else:
+        payload["thinking"]["type"] = "disabled"
+        payload.pop("reasoning_effort", None)
     logger.info(f"尝试备用模型： {BACKUP_MODEL}")
     for i in range(MAX_BACKUP_MODEL_RETRIES):
         try:
@@ -93,7 +107,7 @@ def llm_request(system_prompt: str, user_prompt: str,
                 logger.info(f"备用模型调用成功，调用模型： {BACKUP_MODEL}, 回复： {result}")
                 is_success = True
                 return result, is_success
-            logger.warning(f"备用模型调用失败，状态码： {response.status_code}")
+            logger.warning(f"备用模型调用失败，状态码： {response.status_code}, 响应内容：{response.json()["error"]["message"]}")
             logger.info(f"第 {i + 1 + MAX_MODEL_RETRIES} 次重试")
             if retry_cb is not None:
                 retry_cb(MAX_MODEL_RETRIES + i + 1, MAX_LLM_RETRIES)

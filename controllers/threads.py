@@ -536,7 +536,6 @@ class GetArticleContentThread(QThread):
                 except Exception:  # pylint: disable=broad-exception-caught
                     pass
                 self.crawler.close_all_resource()
-                self.wait()
         finally:
             self.crawler = None
 

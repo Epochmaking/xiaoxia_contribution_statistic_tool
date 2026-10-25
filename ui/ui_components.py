@@ -280,7 +280,10 @@ class MainWindow(QWidget, Ui_MainForm):
         self.article_content_started = False
         msg_box = self._make_msg_box()
         if ok:
-            set_article_confirm_table(self.article_confirm_table, to_calc_fee=self.to_calc_fee.isChecked())
+            try:
+                set_article_confirm_table(self.article_confirm_table, to_calc_fee=self.to_calc_fee.isChecked())
+            except Exception as e:  # pylint: disable=broad-exception-caught
+                logger.exception("加载文章确认表格失败: %s", e)
             self.go_to_next_step()
             msg_box.setText("文章信息获取成功，请返回软件查看文章列表")
             msg_box.exec()
